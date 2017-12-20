@@ -16,6 +16,7 @@ main()
 
 function main() {
 
+	// validate that aircrack-ng tools are installed
 	if (!commandExistsSync('airmon-ng')){
 		console.error('[error] airmon-ng is not installed. Please install the Aircrack-ng suite.')
 		process.exit(1)
@@ -26,6 +27,7 @@ function main() {
 		process.exit(1)
 	}
 
+	// must be run as root for airmon-ng and airodump-ng
 	if (!isRoot()) {
 		console.error('[error] server.js must be run as root. Exiting.')
 		process.exit(1)
@@ -35,21 +37,25 @@ function main() {
 
 	// if a monX interface wasn't specified, create one with airmon-ng
 	if (args.iface.indexOf('mon') != 0) {
+		console.log('[verbose] a monitor mode device wasn\'t provided, creating one with airmon-ng')
 		const airmonProc = spawn('airmon-ng', ['start', args.iface])
 		airmonProc.on('close', (code) => {
 			// could have better error handling here, but w/e...
 			// also should probably not assume that just because a user supplies
 			// an interface that the monX device airmon-ng created is mon0...
+			
+			// lets get our listen on!
 			spawnAirodump('mon0')
 		})
 	} else {
+		// lets get our listen on!
 		spawnAirodump(args.iface)
 	}
 
 	app.use(express.static('www'))
 
 	io.on('connection', function (socket) {
-		
+		console.log('[verbose] new client socket connection')
 		airodumpParser.on('networks', (networks) => {
 			socket.emit('networks', networks)
 		})
@@ -70,13 +76,15 @@ function spawnAirodump(iface) {
 	const airodumpProc = spawn('airodump-ng', ['--output-format', 'csv', '--write', 'data/airodump', iface])
 	
 	airodumpProc.stderr.on('data', data => {
-		// no-op. airodump-ng won't write to csv unless its stderr is read from
+		// no-op. airodump-ng won't write to csv unless its stderr is read from!
 	})
 
 	airodumpProc.on('close', code => {
-		console.log(`[info] airodump-ng child process exited with exit code ${code}`)
+		console.log(`[warning] airodump-ng child process exited with exit code ${code}`)
 	})
 
+	// this is a h4ck. We need to wait and make sure that airodump-ng has created
+	// a data/airodump-XX.csv file before we can read from it.
 	setTimeout(() => {
 		// get the name of the file (most recent data/airodump-XX.csv)
 		// NOTE: this should run after the airodump process was created
@@ -88,7 +96,7 @@ function spawnAirodump(iface) {
 			})
 
 			const filename = 'data/' + files[0]
-			console.log(`[info] poling ${filename} every 1000 ms`)
+			console.log(`[verbose] poling ${filename} every 1000 ms`)
 			setInterval(() => airodumpParser.loadCSV(filename), 1000)
 		})
 	}, 1000)
