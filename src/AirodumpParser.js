@@ -40,7 +40,7 @@ class AirodumpParser extends EventEmitter {
 	_cleanNetworksCSVOutput(networks) {
 		return networks.map((n) => {
 			return {
-				bssd: n.BSSID,
+				bssid: n.BSSID,
 				firstSeen: n[' First time seen'].trim(),
 				lastSeen: n[' Last time seen'].trim(),
 				channel: parseInt(n[' channel']),
@@ -85,19 +85,65 @@ class AirodumpParser extends EventEmitter {
 
 	_updateNetworks(networks) {
 
-		// networks.forEach((net) => {
-		// 	if (!this.networks.hasOwnProperty(net.mac)) {
-		// 		this.networks[net.mac] = net
+		const nets = []
+		networks.forEach((net) => {
+			// if this network hasn't been seen before,
+			// or its values have changed, overwrite it.
+			if (!this.networks.hasOwnProperty(net.bssid) ||
+				isEquivalent(net, this.networks[net.bssid])) {
+				this.networks[net.bssid] = net
+				nets.push(net)
+			}
+		})
 
-		// 	}
-		// })
-		fs.writeFileSync('data/example-networks.json', JSON.stringify(networks))
+		if (nets.length > 0) {
+			this.emit('networks', nets)
+		}
 	}
 
+	// same function as update networks, but with stations
 	_updateStations(stations) {
-		fs.writeFileSync('data/example-stations.json', JSON.stringify(stations))
-		console.log(stations)
-	}
+
+			const stats = []
+			stations.forEach((stat) => {
+				if (!this.stations.hasOwnProperty(stat.mac) ||
+					isEquivalent(stat, this.stations[stat.mac])) {
+					this.stations[stat.mac] = stat
+					stats.push(stat)
+				}
+			})
+
+			if (stats.length > 0) {
+				this.emit('stations', stats)
+			}
+		}
+}
+
+// http://adripofjavascript.com/blog/drips/object-equality-in-javascript.html
+function isEquivalent(a, b) {
+    // Create arrays of property names
+    var aProps = Object.getOwnPropertyNames(a);
+    var bProps = Object.getOwnPropertyNames(b);
+
+    // If number of properties is different,
+    // objects are not equivalent
+    if (aProps.length != bProps.length) {
+        return false;
+    }
+
+    for (var i = 0; i < aProps.length; i++) {
+        var propName = aProps[i];
+
+        // If values of same property are not equal,
+        // objects are not equivalent
+        if (a[propName] !== b[propName]) {
+            return false;
+        }
+    }
+
+    // If we made it this far, objects
+    // are considered equivalent
+    return true;
 }
 
 module.exports = {

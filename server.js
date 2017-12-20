@@ -3,6 +3,11 @@ const { ArgumentParser } = require('argparse')
 const fs = require('fs')
 const isRoot = require('is-root')
 const { AirodumpParser } = require('./src/AirodumpParser')
+const express = require('express')
+
+const app = express()
+const server = require('http').Server(app)
+const io = require('socket.io')(server)
 
 const airodumpParser = new AirodumpParser()
 
@@ -18,8 +23,9 @@ function main() {
 	const args = parseArguments()
 	airodumpParser.loadCSV('data/airodump-41.csv')
 
-	airodumpParser.on('stations', (stations) => {
-		io.emit(ne)
+	airodumpParser.on('networks', (networks) => {
+		console.log('networks!')
+		console.log(networks)
 	})
 
 	// if a monX interface wasn't specified, create one with airmon-ng
@@ -34,6 +40,21 @@ function main() {
 	} else {
 		spawnAirodump(args.iface)
 	}
+
+	server.listen(1337)
+
+	app.use(express.static('www'))
+
+	io.on('connection', function (socket) {
+
+		airodumpParser.on('networks', (networks) => {
+			socket.emit('networks', networks)
+		})
+
+		airodumpParser.on('stations', (stations) => {
+			socket.emit('stations', stations)
+		})
+	})
 }
 
 function spawnAirodump(iface) {
