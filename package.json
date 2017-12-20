@@ -20,6 +20,8 @@
   "dependencies": {
     "argparse": "^1.0.9",
     "csv-parse": "^2.0.0",
-    "is-root": "^1.0.0"
+    "express": "^4.16.2",
+    "is-root": "^1.0.0",
+    "socket.io": "^2.0.4"
   }
 }
