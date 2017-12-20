@@ -1,0 +1,25 @@
+{
+  "name": "wireless-data-safari",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/brangerbriz/wireless-data-safari.git"
+  },
+  "author": "Brannon Dorsey",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/brangerbriz/wireless-data-safari/issues"
+  },
+  "homepage": "https://github.com/brangerbriz/wireless-data-safari#readme",
+  "dependencies": {
+    "argparse": "^1.0.9",
+    "csv-parse": "^2.0.0",
+    "is-root": "^1.0.0"
+  }
+}
