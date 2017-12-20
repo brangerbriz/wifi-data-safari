@@ -4,6 +4,7 @@ const fs = require('fs')
 const isRoot = require('is-root')
 const { AirodumpParser } = require('./src/AirodumpParser')
 const express = require('express')
+var commandExistsSync = require('command-exists').sync
 
 const app = express()
 const server = require('http').Server(app)
@@ -15,18 +16,22 @@ main()
 
 function main() {
 
-	// if (!isRoot()) {
-	// 	console.error('[error] server.js must be run as root. Exiting.')
-	// 	process.exit(1)
-	// }
+	if (!commandExistsSync('airmon-ng')){
+		console.error('[error] airmon-ng is not installed. Please install the Aircrack-ng suite.')
+		process.exit(1)
+	}
+
+	if (!commandExistsSync('airodump-ng')) {
+		console.error('[error] airmodump-ng is not installed. Please install the Aircrack-ng suite.')
+		process.exit(1)
+	}
+
+	if (!isRoot()) {
+		console.error('[error] server.js must be run as root. Exiting.')
+		process.exit(1)
+	}
 
 	const args = parseArguments()
-	airodumpParser.loadCSV('data/airodump-41.csv')
-
-	airodumpParser.on('networks', (networks) => {
-		console.log('networks!')
-		console.log(networks)
-	})
 
 	// if a monX interface wasn't specified, create one with airmon-ng
 	if (args.iface.indexOf('mon') != 0) {
@@ -41,12 +46,10 @@ function main() {
 		spawnAirodump(args.iface)
 	}
 
-	server.listen(1337)
-
 	app.use(express.static('www'))
 
 	io.on('connection', function (socket) {
-
+		
 		airodumpParser.on('networks', (networks) => {
 			socket.emit('networks', networks)
 		})
@@ -55,6 +58,9 @@ function main() {
 			socket.emit('stations', stations)
 		})
 	})
+
+	console.log(`[info] HTTP server started on port ${args.port}`)
+	server.listen(args.port)
 }
 
 function spawnAirodump(iface) {
@@ -71,18 +77,21 @@ function spawnAirodump(iface) {
 		console.log(`[info] airodump-ng child process exited with exit code ${code}`)
 	})
 
-	// get the name of the file (most recent data/airodump-XX.csv)
-	// NOTE: this should run after the airodump process was created
-	fs.readdir('data', (err, files) => {
-		
-		files = files.filter(file => file.indexOf('airodump-') == 0)
-		files.sort((a, b) => {
-			return parseInt(b.substring(9, 11)) - parseInt(a.substring(9, 11))
-		})
+	setTimeout(() => {
+		// get the name of the file (most recent data/airodump-XX.csv)
+		// NOTE: this should run after the airodump process was created
+		fs.readdir('data', (err, files) => {
+			
+			files = files.filter(file => file.indexOf('airodump-') == 0)
+			files.sort((a, b) => {
+				return parseInt(b.substring(9, 11)) - parseInt(a.substring(9, 11))
+			})
 
-		const filename = 'data/' + files[0]
-		setInterval(() => airodumpParser.loadCSV(filename), 1000)
-	})
+			const filename = 'data/' + files[0]
+			console.log(`[info] poling ${filename} every 1000 ms`)
+			setInterval(() => airodumpParser.loadCSV(filename), 1000)
+		})
+	}, 1000)
 }
 
 function parseArguments() {
@@ -97,6 +106,11 @@ function parseArguments() {
 		required: true
 	})
 
+	parser.addArgument(['-p', '--port'], { 
+		help: 'The HTTP port to serve the browser interface on (default: 1337)',
+		defaultValue: 1337,
+		type: 'int'
+	})
+
 	return parser.parseArgs()
 }
-

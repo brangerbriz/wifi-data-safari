@@ -1,6 +1,7 @@
 const fs = require('fs')
 const EventEmitter = require('events')
 const csvParse = require('csv-parse')
+const _ = require('underscore')
 
 class AirodumpParser extends EventEmitter {
 
@@ -13,7 +14,6 @@ class AirodumpParser extends EventEmitter {
 	loadCSV(filename) {
 
 		fs.readFile(filename, 'utf8', (err, data) => {
-		
 			if (err) {
 				console.log(`[error] error loading ${filename}. Exiting.`)
 				process.exit(1)
@@ -26,13 +26,20 @@ class AirodumpParser extends EventEmitter {
 				const networks = data.substring(2, split - 3)
 				const stations = data.substring(split)
 
-				csvParse(networks, {columns: true, delimiter: ','}, (err, output) => {
-					this._updateNetworks(this._cleanNetworksCSVOutput(output))
-				})
+				// catch all error to mitigate the sudo node logout error I'm
+				// experiencing on Ubuntu
+				try {
+					csvParse(networks, {columns: true, delimiter: ','}, (err, output) => {
+						this._updateNetworks(this._cleanNetworksCSVOutput(output))
+					})
 
-				csvParse(stations, {columns: true, delimiter: ','}, (err, output) => {
-					this._updateStations(this._cleanStationsCSVOutput(output))
-				})
+					csvParse(stations, {columns: true, delimiter: ','}, (err, output) => {
+						this._updateStations(this._cleanStationsCSVOutput(output))
+					})
+				} catch (err) {
+					console.error('[error] Error in loadCSV(...):')
+					console.error(err)
+				}
 			}
 		})
 	}
@@ -40,7 +47,7 @@ class AirodumpParser extends EventEmitter {
 	_cleanNetworksCSVOutput(networks) {
 		return networks.map((n) => {
 			return {
-				bssid: n.BSSID,
+				mac: n.BSSID,
 				firstSeen: n[' First time seen'].trim(),
 				lastSeen: n[' Last time seen'].trim(),
 				channel: parseInt(n[' channel']),
@@ -89,61 +96,35 @@ class AirodumpParser extends EventEmitter {
 		networks.forEach((net) => {
 			// if this network hasn't been seen before,
 			// or its values have changed, overwrite it.
-			if (!this.networks.hasOwnProperty(net.bssid) ||
-				isEquivalent(net, this.networks[net.bssid])) {
-				this.networks[net.bssid] = net
+			if (!this.networks.hasOwnProperty(net.mac) ||
+				!_.isEqual(net, this.networks[net.mac])) {
+				this.networks[net.mac] = net
 				nets.push(net)
 			}
 		})
 
 		if (nets.length > 0) {
+			console.log(`Emitting ${nets.length} networks`)
 			this.emit('networks', nets)
 		}
 	}
 
 	// same function as update networks, but with stations
 	_updateStations(stations) {
-
-			const stats = []
-			stations.forEach((stat) => {
-				if (!this.stations.hasOwnProperty(stat.mac) ||
-					isEquivalent(stat, this.stations[stat.mac])) {
-					this.stations[stat.mac] = stat
-					stats.push(stat)
-				}
-			})
-
-			if (stats.length > 0) {
-				this.emit('stations', stats)
+		const stats = []
+		stations.forEach((stat) => {
+			if (!this.stations.hasOwnProperty(stat.mac) ||
+				!_.isEqual(stat, this.stations[stat.mac])) {
+				this.stations[stat.mac] = stat
+				stats.push(stat)
 			}
+		})
+
+		if (stats.length > 0) {
+			console.log(`Emitting ${stats.length} stations`)
+			this.emit('stations', stats)
 		}
-}
-
-// http://adripofjavascript.com/blog/drips/object-equality-in-javascript.html
-function isEquivalent(a, b) {
-    // Create arrays of property names
-    var aProps = Object.getOwnPropertyNames(a);
-    var bProps = Object.getOwnPropertyNames(b);
-
-    // If number of properties is different,
-    // objects are not equivalent
-    if (aProps.length != bProps.length) {
-        return false;
-    }
-
-    for (var i = 0; i < aProps.length; i++) {
-        var propName = aProps[i];
-
-        // If values of same property are not equal,
-        // objects are not equivalent
-        if (a[propName] !== b[propName]) {
-            return false;
-        }
-    }
-
-    // If we made it this far, objects
-    // are considered equivalent
-    return true;
+	}
 }
 
 module.exports = {

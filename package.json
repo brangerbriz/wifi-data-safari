@@ -22,6 +22,7 @@
     "csv-parse": "^2.0.0",
     "express": "^4.16.2",
     "is-root": "^1.0.0",
-    "socket.io": "^2.0.4"
+    "socket.io": "^2.0.4",
+    "underscore": "^1.8.3"
   }
 }
