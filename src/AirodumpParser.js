@@ -1,6 +1,5 @@
 const fs = require('fs')
 const EventEmitter = require('events')
-const csvParse = require('csv-parse')
 const _ = require('underscore')
 const macLookup = require('mac-lookup')
 
@@ -12,6 +11,31 @@ class AirodumpParser extends EventEmitter {
 		this.stations = {}
 	}
 
+	parseCSV() {
+		const networks = []
+		const devices = []
+
+		const split = data.indexOf('Station MAC, First time seen, Last time seen, Power, # packets, BSSID, Probed ESSIDs')
+		if (split > -1) {
+
+			// skip some empty chars and newlines
+			const nets = data.substring(2, split - 3)
+			const stats = data.substring(split)
+
+			nets.forEach((line, i) => {
+				if (i != 0) {
+					const vals = line.split(', ')
+					if (vals.length == 15) {
+						networks.push({
+
+						})
+					}
+				}
+			})
+		}
+		return { networks, devices }
+	}
+
 	loadCSV(filename) {
 
 		fs.readFile(filename, 'utf8', (err, data) => {
@@ -20,9 +44,10 @@ class AirodumpParser extends EventEmitter {
 				process.exit(1)
 			}
 
-			data = data.toString()
-			const split = data.indexOf('Station MAC, First time seen, Last time seen, Power, # packets, BSSID, Probed ESSIDs')
+			data = data.toString().replace(/,\s/g, '`')
+			const split = data.indexOf('Station MAC`First time seen`Last time seen`Power`# packets`BSSID`Probed ESSIDs')
 			if (split > -1) {
+
 				// skip some empty chars and newlines
 				const networks = data.substring(2, split - 3)
 				const stations = data.substring(split)
@@ -30,15 +55,19 @@ class AirodumpParser extends EventEmitter {
 				// catch all error to mitigate the sudo node logout error I'm
 				// experiencing on Ubuntu
 				try {
-					csvParse(networks, {columns: true, delimiter: ','}, (err, output) => {
+					csvParse(networks, {columns: true, delimiter: '`', relax_column_count: true}, (err, output) => {
+						if (err) throw err
 						const devices = this._cleanNetworksCSVOutput(output)
 						this._addVendorInfo(devices, (devs) => {
 							this._updateNetworks(devs)
 						})
 					})
 
-					csvParse(stations, {columns: true, delimiter: ','}, (err, output) => {
+					csvParse(stations, {columns: true, delimiter: '`', relax_column_count: true}, (err, output) => {
+						if (err) throw err
 						const devices = this._cleanStationsCSVOutput(output)
+						console.log(devices)
+
 						this._addVendorInfo(devices, (devs) => {
 							this._updateStations(devs)
 						})
@@ -67,49 +96,39 @@ class AirodumpParser extends EventEmitter {
 	}
 
 	_cleanNetworksCSVOutput(networks) {
-		if (!networks) return []
+		// if (!networks) return []
 		return networks.map((n) => {
 			return {
 				mac: n.BSSID,
-				firstSeen: n[' First time seen'].trim(),
-				lastSeen: n[' Last time seen'].trim(),
-				channel: parseInt(n[' channel']),
-				speed: parseInt(n[' Speed']),
-				privacy: n[' Privacy'].trim(),
-				cipher: n[' Cipher'].trim(),
-				auth: n[' Authentication'].trim(),
-				power: parseInt(n[' Power'].trim()),
-				beacons: parseInt(n[' # beacons']),
-				iv: parseInt(n[' # IV']),
-				lanIP: n[' LAN IP'].split('.').map(x => parseInt(x)).join('.'),
-				ssid: n[' ESSID'].trim(),
-				key: n[' Key'].trim()
+				firstSeen: n['First time seen'].trim(),
+				lastSeen: n['Last time seen'].trim(),
+				channel: parseInt(n['channel']),
+				speed: parseInt(n['Speed']),
+				privacy: n['Privacy'].trim(),
+				cipher: n['Cipher'].trim(),
+				auth: n['Authentication'].trim(),
+				power: parseInt(n['Power'].trim()),
+				beacons: parseInt(n['# beacons']),
+				iv: parseInt(n['# IV']),
+				lanIP: n['LAN IP'].split('.').map(x => parseInt(x)).join('.'),
+				ssid: n['ESSID'].trim().replace('\r', ''),
 			}
 		})
 	}
 
 	_cleanStationsCSVOutput(stations) {
-		if (!stations) return []
+		// if (!stations) return []
 		// come back and see why filter bombs sometimes
 		return stations
-			.filter(s => {
-				return s.hasOwnProperty('Station MAC') && 
-					   s.hasOwnProperty(' First time seen') &&
-					   s.hasOwnProperty(' Last time seen') &&
-					   s.hasOwnProperty(' Power') &&
-					   s.hasOwnProperty(' # packets') &&
-					   s.hasOwnProperty(' BSSID') &&
-					   s.hasOwnProperty(' Probed ESSIDs')
-			})
 			.map((s) => {
 					return {
 						mac: s['Station MAC'],
-						firstSeen: s[' First time seen'].trim(),
-						lastSeen: s[' Last time seen'].trim(),
-						power: parseInt(s[' Power']),
-						packets: parseInt(s[' # packets']),
-						network: s[' BSSID'].trim() == '(not associated)' ? null : s[' BSSID'].trim(),
-						probes: s[' Probed ESSIDs'].trim().split(',').filter(x => x != '')
+						firstSeen: s['First time seen'].trim(),
+						lastSeen: s['Last time seen'].trim(),
+						power: parseInt(s['Power']),
+						packets: parseInt(s['# packets']),
+						network: s['BSSID'].trim() == '(not associated)' ? null : s['BSSID'].trim(),
+						probes: s['Probed ESSIDs'].trim().split(',').filter(x => x != '')
 					}
 			})
 	}
