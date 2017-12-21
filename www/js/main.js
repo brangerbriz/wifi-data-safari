@@ -2,11 +2,6 @@ const socket = io('http://localhost:1337')
 socket.on('networks',(ns)=>ns.forEach((n)=>app.add('networks',n)))
 socket.on('stations',(ss)=>ss.forEach((s)=>app.add('stations',s)))
 
-// TODO:
-// - time how often iPhone sends probes, adjust visiblityTime to match
-// - does it make more sense to only list un-attached devices
-// - figure out why the conneced devices are so high
-
 const app = new Vue({
     el: '#app',
     data: {
@@ -21,12 +16,14 @@ const app = new Vue({
     methods:{
         updateConnectedDevices:function(netMac,devMac){
             if( typeof this.networks[netMac]!=='undefined'){
-                let clients = this.networks[netMac].clients.slice()
+                let clients = []
 
+                // if called on new network, else called on new station
                 if( typeof devMac == 'undefined')
                     for( let dev in this.stations )
-                        if(dev.network==netMac) clients.push(dev.mac)
-                else clients.push(dev.mac)
+                        if(this.stations[dev].network==netMac)
+                            clients.push(this.stations[dev].mac)
+                else clients = [ ...this.networks[netMac].clients, devMac ]
 
                 this.$set(this.networks[netMac],'clients',clients)
 
@@ -52,7 +49,7 @@ const app = new Vue({
             // update connected devices list
             if( dict=="networks")
                 this.updateConnectedDevices(n.mac)
-            else if( dict=="stations")
+            else if( dict=="stations" && n.network)
                 this.updateConnectedDevices(n.network,n.mac)
 
             // create||reset the remove timer
