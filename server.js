@@ -3,6 +3,7 @@ const { ArgumentParser } = require('argparse')
 const fs = require('fs')
 const isRoot = require('is-root')
 const { AirodumpParser } = require('./src/AirodumpParser')
+const { updateVendorMacs } = require('./src/utils')
 const express = require('express')
 var commandExistsSync = require('command-exists').sync
 
@@ -34,7 +35,17 @@ function main() {
 	}
 
 	const args = parseArguments()
+	if (args['update_vendor_macs']) updateVendorMacs() 
+	else {
+		if (!args.iface) {
+			console.error('[error] a wireless interace must be provided with --iface argument.')
+			process.exit(1)
+		}
+		launch(args)
+	}
+}
 
+function launch(args) {
 	// if a monX interface wasn't specified, create one with airmon-ng
 	if (args.iface.indexOf('mon') != 0) {
 		console.log('[verbose] a monitor mode device wasn\'t provided, creating one with airmon-ng')
@@ -111,13 +122,17 @@ function parseArguments() {
 
 	parser.addArgument(['-i', '--iface'], { 
 		help: 'The wireless interface to use for airodump-ng. If a non monX interface is specified, airmon-ng will use it to create one.',
-		required: true
 	})
 
 	parser.addArgument(['-p', '--port'], { 
 		help: 'The HTTP port to serve the browser interface on (default: 1337)',
 		defaultValue: 1337,
 		type: 'int'
+	})
+
+	parser.addArgument(['-u', '--update-vendor-macs'], {
+		help: 'Update the vendor MAC address database. Must have an internet connection.',
+		nargs: 0
 	})
 
 	return parser.parseArgs()

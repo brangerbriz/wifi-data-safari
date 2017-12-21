@@ -2,6 +2,7 @@ const fs = require('fs')
 const EventEmitter = require('events')
 const csvParse = require('csv-parse')
 const _ = require('underscore')
+const macLookup = require('mac-lookup')
 
 class AirodumpParser extends EventEmitter {
 
@@ -30,11 +31,17 @@ class AirodumpParser extends EventEmitter {
 				// experiencing on Ubuntu
 				try {
 					csvParse(networks, {columns: true, delimiter: ','}, (err, output) => {
-						this._updateNetworks(this._cleanNetworksCSVOutput(output))
+						const devices = this._cleanNetworksCSVOutput(output)
+						this._addVendorInfo(devices, (devs) => {
+							this._updateNetworks(devs)
+						})
 					})
 
 					csvParse(stations, {columns: true, delimiter: ','}, (err, output) => {
-						this._updateStations(this._cleanStationsCSVOutput(output))
+						const devices = this._cleanStationsCSVOutput(output)
+						this._addVendorInfo(devices, (devs) => {
+							this._updateStations(devs)
+						})
 					})
 				} catch (err) {
 					console.error('[error] Error in loadCSV(...):')
@@ -44,7 +51,23 @@ class AirodumpParser extends EventEmitter {
 		})
 	}
 
+	_addVendorInfo(devices, callback) {
+		callback = _.after(devices.length, callback)
+		devices.forEach(dev => {
+			if (dev.hasOwnProperty('vendor')) {
+				callback(devices)
+			} else {
+				macLookup.lookup(dev.mac, (err, vendor) => {
+					if (err) throw err
+					else dev.vendor = vendor
+					callback(devices)
+				})
+			}
+		}) 
+	}
+
 	_cleanNetworksCSVOutput(networks) {
+		if (!networks) return []
 		return networks.map((n) => {
 			return {
 				mac: n.BSSID,
@@ -66,6 +89,7 @@ class AirodumpParser extends EventEmitter {
 	}
 
 	_cleanStationsCSVOutput(stations) {
+		if (!stations) return []
 		// come back and see why filter bombs sometimes
 		return stations
 			.filter(s => {
