@@ -19,6 +19,7 @@
   "homepage": "https://github.com/brangerbriz/wireless-data-safari#readme",
   "dependencies": {
     "argparse": "^1.0.9",
+    "command-exists": "^1.2.2",
     "csv-parse": "^2.0.0",
     "express": "^4.16.2",
     "is-root": "^1.0.0",
