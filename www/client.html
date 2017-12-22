@@ -12,19 +12,19 @@
                 v-bind:networks="networksCount"
                 v-bind:stations="stationsCount"
             ></the-header>
-            <the-list
-                v-bind:show-networks="showNetworks"
-                v-bind:show-stations="showStations"
-                v-bind:networks="networks"
-                v-bind:stations="stations"
-            ></the-list>
+            <list-item
+                v-for="d in orderedDevices()"
+                v-bind:key="d.mac"
+                v-bind:data-obj="d"
+                v-bind:data-type="d.privacy ? 'network' : 'station'"
+            ></list-item>
         </div>
 
         <script src="js/vue.js"></script>
         <!-- <script src="js/vue.min.js"></script> -->
         <script src="/socket.io/socket.io.js"></script>
+        <script src="js/list-item.js"></script>
         <script src="js/the-header.js"></script>
-        <script src="js/the-list.js"></script>
         <script src="js/main.js"></script>
         <!-- <script src="js/test-events.js"></script> -->
     </body>

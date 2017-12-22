@@ -5,6 +5,6 @@ Vue.component('the-header', {
     },
     template:`<div>
         <div> {{networks}} Networks </div>
-        <div> {{stations}} Stations </div>
+        <div> {{stations}} Devices </div>
     </div>`
 })
