@@ -27,7 +27,6 @@ const app = new Vue({
                 if( typeof devs[m].network == 'string' ){
                     // include associated stations if their network is missing
                     if( !this.networks.hasOwnProperty(devs[m].network) ){
-console.log(`### ${devs[m].mac} to ${devs[m].network}` )
                         ordered.push( devs[m] )
                     }
                 } else {
