@@ -43,6 +43,17 @@ function main() {
 		}
 		launch(args)
 	}
+
+	process.on('uncaughtException', function (err) {
+		cleanup()
+		throw err
+	})
+
+	process.on('SIGINT', function() {
+	    console.log("Caught interrupt signal")
+	    cleanup()
+	    process.exit(0)
+	})
 }
 
 function launch(args) {
@@ -78,6 +89,11 @@ function launch(args) {
 
 	console.log(`[info] HTTP server started on port ${args.port}`)
 	server.listen(args.port)
+}
+
+function cleanup() {
+	// kill airodump-ng
+	// stop mon0
 }
 
 function spawnAirodump(iface) {
