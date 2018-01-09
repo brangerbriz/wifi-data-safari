@@ -1,11 +1,24 @@
 const macLookup = require('mac-lookup')
 const { spawn } = require('child_process')
 
+
+function getMonDevice(callback){
+	let iwconfig = spawn('iwconfig')
+	iwconfig.stdout.on('data', data => {
+		let str = `${data}`
+		str.split('\n').forEach(s=>{
+			if( s.indexOf('Mode:Monitor')>0)
+				callback(s.substring(0,s.search(' ')))
+		})
+	})
+}
+
+
 function updateVendorMacs(callback) {
 	// curl -f -L -o node_modules/mac-lookup/oui.txt https://linuxnet.ca/ieee/oui.txt
 	console.log('[verbose] downloading mac vendor dataset...')
-	curl = spawn('curl', ['-f', '-L', '-o', 
-						  'node_modules/mac-lookup/oui.txt', 
+	curl = spawn('curl', ['-f', '-L', '-o',
+						  'node_modules/mac-lookup/oui.txt',
 						  'https://linuxnet.ca/ieee/oui.txt'])
 
 	curl.on('close', (code) => {
@@ -32,5 +45,6 @@ function updateVendorMacs(callback) {
 }
 
 module.exports = {
-	updateVendorMacs
+	updateVendorMacs,
+    getMonDevice
 }
