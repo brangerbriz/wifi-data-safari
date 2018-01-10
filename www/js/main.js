@@ -58,19 +58,24 @@ const app = new Vue({
                     ordered.push( devs[m] )
                 }
             }
-            ordered.sort((a,b)=>a.power-b.power)
+            ordered.sort((a,b)=>b.power-a.power)
             return ordered
         },
         updateConnectedDevices:function(netMac,devMac){
             if( typeof this.networks[netMac]!=='undefined'){
                 let clients = []
 
-                // if called on new network, else called on new station
-                if( typeof devMac == 'undefined')
-                    for( let dev in this.stations )
-                        if(this.stations[dev].network==netMac)
-                            clients.push(this.stations[dev].mac)
-                else clients = [ ...this.networks[netMac].clients, devMac ]
+                if( typeof devMac == 'undefined'){
+                    // if called to add new network
+                    for( let mac in this.stations ){
+                        if(this.stations[mac].network==netMac){
+                            clients.push(mac)
+                        }
+                    }
+                } else {
+                    // if called to add new station
+                    clients = [ ...this.networks[netMac].clients, devMac ]
+                }
 
                 this.$set(this.networks[netMac],'clients',clients)
 

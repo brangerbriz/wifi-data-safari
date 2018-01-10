@@ -57,8 +57,8 @@ html, body {
         .list-item-heading {
             display: grid;
             align-items: center;
-            grid-template-columns: 100px 400px 0px 300px;
-            max-width:800px;
+            grid-template-columns: 100px 400px 0px 100px;
+            max-width: 600px;
             margin:0 auto;
         }
         .list-item-detail {

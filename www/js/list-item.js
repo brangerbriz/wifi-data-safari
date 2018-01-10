@@ -32,7 +32,7 @@ Vue.component('list-item', {
                 </svg>
                 <span> {{ DataObj.ssid.length>0 ? DataObj.ssid : 'un-named' }} </span>
                 <span class="spacer"></span>
-                <span> ({{ DataObj.clients.length }} connected devices) </span>
+                <span> {{ DataObj.power }} dBm </span>
             </div>
 
             <list-detail-network
@@ -54,8 +54,8 @@ Vue.component('list-item', {
                 </svg>
                 <span> {{ DataObj.mac }} </span>
                 <span>
-                    <span v-if="DataObj.network" style="color:red">(connected to unknown network)</span>
-                    <span v-else>(probing)</span>
+                    <span v-if="DataObj.network" style="color:red">connected?</span>
+                    <span v-else>probing</span>
                 </span>
             </div>
 
