@@ -1,20 +1,46 @@
 const socket = io('http://localhost:1337')
-// TODO add conditioanl logic in callbacks for eye-button
-socket.on('networks',(ns)=>ns.forEach((n)=>app.add('networks',n)))
-socket.on('stations',(ss)=>ss.forEach((s)=>app.add('stations',s)))
+
+socket.on('networks',(ns)=>{
+    if(!app.paused) ns.forEach((n)=>app.add('networks',n))
+})
+
+socket.on('stations',(ss)=>{
+    if(!app.paused) ss.forEach((s)=>app.add('stations',s))
+})
 
 const app = new Vue({
     el: '#app',
     data: {
+        paused:false,
         visiblityTime:6000,
         networks:{},
         stations:{},
         networksCount:0,
-        stationsCount:0,
-        // showNetworks:true,
-        // showStations:true
+        stationsCount:0
     },
     methods:{
+        killTimeouts:function(dict){
+            for(var n in this[dict]) clearTimeout( this[dict][n].remove )
+        },
+        resetTimeouts:function(dict){
+            for (var n in this[dict])
+                this[dict][n].remove = setTimeout(()=>{
+                    this.$delete(this[dict],n)
+                    this[dict+'Count'] = Object.keys(this[dict]).length
+                },this.visiblityTime)
+        },
+        togglePause:function(){
+            // stop receiving new updates from sockets
+            this.paused = !this.paused
+            // handle updating timeouts when pause is toggled
+            if(this.paused){
+                this.killTimeouts('stations')
+                this.killTimeouts('networks')
+            } else {
+                this.resetTimeouts('stations')
+                this.resetTimeouts('networks')
+            }
+        },
         allDevices:function(){
             return Object.assign({},this.networks,this.stations)
         },
@@ -26,9 +52,8 @@ const app = new Vue({
             for( let m in devs ){
                 if( typeof devs[m].network == 'string' ){
                     // include associated stations if their network is missing
-                    if( !this.networks.hasOwnProperty(devs[m].network) ){
+                    if( !this.networks.hasOwnProperty(devs[m].network) )
                         ordered.push( devs[m] )
-                    }
                 } else {
                     ordered.push( devs[m] )
                 }

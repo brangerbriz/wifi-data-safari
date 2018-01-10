@@ -4,6 +4,7 @@
         <title> WiFi Data Safari </title>
         <meta charset="utf-8">
         <link rel="stylesheet" href="css/styles.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
     </head>
     <body>
 
@@ -11,20 +12,26 @@
             <the-header
                 v-bind:networks="networksCount"
                 v-bind:stations="stationsCount"
+                v-on:eyetoggle="togglePause()"
             ></the-header>
-            <list-item
-                v-for="d in orderedDevices()"
-                v-bind:key="d.mac"
-                v-bind:data-obj="d"
-                v-bind:data-type="d.privacy ? 'network' : 'station'"
-            ></list-item>
+            <div class="data-list">
+                <list-item
+                    v-for="d in orderedDevices()"
+                    v-bind:key="d.mac"
+                    v-bind:data-obj="d"
+                    v-bind:data-type="d.privacy ? 'network' : 'station'"
+                    class="list-item"
+                ></list-item>
+            </div>
+
         </div>
 
         <script src="js/vue.js"></script>
         <!-- <script src="js/vue.min.js"></script> -->
         <script src="/socket.io/socket.io.js"></script>
-        <script src="js/list-item.js"></script>
         <script src="js/the-header.js"></script>
+        <script src="js/list-item.js"></script>
+        <script src="js/list-detail-network.js"></script>
         <script src="js/main.js"></script>
         <!-- <script src="js/test-events.js"></script> -->
     </body>

@@ -1,39 +1,63 @@
 Vue.component('list-item', {
+    data:function(){return {
+        showDetail:false
+    }},
     props:{
         DataType:String,
         DataObj:Object
     },
-    template:`<div>
+    computed:{
+        getColor:function(){
+            let mac = this.DataObj.mac.split(':')
+            return `#${mac[0]}${mac[1]}${mac[2]}`
+        }
+    },
+    template:`<div v-on:click="showDetail=!showDetail">
         <div v-if="DataType=='network'">
 
-            <svg xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 373 373" width="10">
-                <title>flower</title>
-                <path style="color:#f4eef6" d="M154.93,83l0-.49a2.47,2.47,0,0,1,.16.37S155,82.94,154.93,83Z"/><circle cx="121.66" cy="131.49" r="50.31"/>
-                <circle cx="186.48" cy="103.03" r="50.31"/>
-                <circle cx="247.35" cy="129.91" r="50.31"/>
-                <circle cx="268.69" cy="186.83" r="50.31"/>
-                <circle cx="102.68" cy="189.99" r="50.31"/>
-                <circle cx="121.66" cy="240.58" r="50.31"/>
-                <circle cx="186.48" cy="269.04" r="50.31"/>
-                <circle cx="247.35" cy="242.16" r="50.31"/>
-                <circle style="color:#fff" cx="186.23" cy="186.8" r="42.16"/>
-            </svg>
+            <div class="list-item-heading">
+                <svg xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 373 373" width="50">
+                    <title>flower</title>
+                    <path style="color:#f4eef6" d="M154.93,83l0-.49a2.47,2.47,0,0,1,.16.37S155,82.94,154.93,83Z"/>
+                    <circle v-bind:style="{fill:getColor}" cx="121.66" cy="131.49" r="50.31"/>
+                    <circle v-bind:style="{fill:getColor}" cx="186.48" cy="103.03" r="50.31"/>
+                    <circle v-bind:style="{fill:getColor}" cx="247.35" cy="129.91" r="50.31"/>
+                    <circle v-bind:style="{fill:getColor}" cx="268.69" cy="186.83" r="50.31"/>
+                    <circle v-bind:style="{fill:getColor}" cx="102.68" cy="189.99" r="50.31"/>
+                    <circle v-bind:style="{fill:getColor}" cx="121.66" cy="240.58" r="50.31"/>
+                    <circle v-bind:style="{fill:getColor}" cx="186.48" cy="269.04" r="50.31"/>
+                    <circle v-bind:style="{fill:getColor}" cx="247.35" cy="242.16" r="50.31"/>
+                    <circle style="fill:#fff" cx="186.23" cy="186.8" r="42.16"/>
+                </svg>
+                <span> {{ DataObj.ssid.length>0 ? DataObj.ssid : 'un-named' }} </span>
+                <span class="spacer"></span>
+                <span> ({{ DataObj.clients.length }} connected devices) </span>
+            </div>
 
-            {{ DataObj.ssid.length>0 ? DataObj.ssid : 'un-named' }}
-            ( {{ DataObj.clients.length }} connced devices )
+            <list-detail-network
+                class="list-item-detail"
+                v-if="showDetail"
+                v-bind:data-obj="DataObj"
+                v-bind:style="{borderColor:getColor}"
+            ></list-detail-network>
 
         </div>
         <div v-else-if="DataType=='station'">
 
-            <svg xmlns="http://www.w3.org/2000/svg"
-                viewBox="0 0 373 373" width="10">
-                <title>butterfly</title><path d="M261.06,263.35q0,7.69-.08,15.38l-.27,2.21c-7,27.71-26,25.79-45.58,13.53-14.41-9.05-22.58-23.52-28.33-39.29-.93-2.57-1.79-5.16-3.21-9.31-4.82,16.37-11.54,29.94-22.37,41.18-6.74,7-14.6,12.1-24.14,14.37-16.87,4-28.24-3.8-30-21.24a113,113,0,0,1,1-30.71,139.18,139.18,0,0,1,3.57-14.93c.79-2.7.89-4.05-2.47-4.77-26-5.55-41.6-23.39-52.1-46.11-10.88-23.54-18.28-48.47-27.36-72.74C26,101.06,22.38,91.19,19,81.24c-3.13-9.07-1.49-12.06,7.52-14.66,29.6-8.55,56.29-.87,81.37,14.92,32.37,20.39,55.84,48.73,73,82.62,1,2.06,2,4.15,3.1,6.2.2.39.68.65,1.43,1.34,8.1-16.49,17-32.35,28.57-46.51,21.5-26.38,46.59-47.88,79.62-58.11a87.1,87.1,0,0,1,49.17-.72c9.94,2.78,11.64,5.75,8.09,15.74q-8.88,25-18.15,49.91c-6.32,17.08-12,34.47-19.4,51.07-9.5,21.25-24,38.26-47.24,45.59-10.33,3.25-10.38,3-8.05,14.1.69,3.26,1.22,6.55,1.83,9.82C261.1,258.72,260.46,259.78,261.06,263.35Z"/>
-            </svg>
-
-            {{ DataObj.mac }}
-            <span v-if="DataObj.network" style="color:red">(connected to unknown network)</span>
-
+            <div class="list-item-heading">
+                <svg xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 373 373" width="50">
+                    <title>butterfly</title>
+                    <path
+                    v-bind:style="{fill:getColor}" d="M261.06,263.35q0,7.69-.08,15.38l-.27,2.21c-7,27.71-26,25.79-45.58,13.53-14.41-9.05-22.58-23.52-28.33-39.29-.93-2.57-1.79-5.16-3.21-9.31-4.82,16.37-11.54,29.94-22.37,41.18-6.74,7-14.6,12.1-24.14,14.37-16.87,4-28.24-3.8-30-21.24a113,113,0,0,1,1-30.71,139.18,139.18,0,0,1,3.57-14.93c.79-2.7.89-4.05-2.47-4.77-26-5.55-41.6-23.39-52.1-46.11-10.88-23.54-18.28-48.47-27.36-72.74C26,101.06,22.38,91.19,19,81.24c-3.13-9.07-1.49-12.06,7.52-14.66,29.6-8.55,56.29-.87,81.37,14.92,32.37,20.39,55.84,48.73,73,82.62,1,2.06,2,4.15,3.1,6.2.2.39.68.65,1.43,1.34,8.1-16.49,17-32.35,28.57-46.51,21.5-26.38,46.59-47.88,79.62-58.11a87.1,87.1,0,0,1,49.17-.72c9.94,2.78,11.64,5.75,8.09,15.74q-8.88,25-18.15,49.91c-6.32,17.08-12,34.47-19.4,51.07-9.5,21.25-24,38.26-47.24,45.59-10.33,3.25-10.38,3-8.05,14.1.69,3.26,1.22,6.55,1.83,9.82C261.1,258.72,260.46,259.78,261.06,263.35Z"/>
+                </svg>
+                <span> {{ DataObj.mac }} </span>
+                <span>
+                    <span v-if="DataObj.network" style="color:red">(connected to unknown network)</span>
+                    <span v-else>(probing)</span>
+                </span>
+            </div>
 
         </div>
     </div>`
