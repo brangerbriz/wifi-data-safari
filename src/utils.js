@@ -1,16 +1,22 @@
 const macLookup = require('mac-lookup')
-const { spawn } = require('child_process')
+const { spawn, spawnSync } = require('child_process')
 
 
-function getMonDevice(callback){
-	let iwconfig = spawn('iwconfig')
-	iwconfig.stdout.on('data', data => {
-		let str = `${data}`
-		str.split('\n').forEach(s=>{
-			if( s.indexOf('Mode:Monitor')>0)
-				callback(s.substring(0,s.search(' ')))
-		})
+function getNetInterfaces(callback){
+	let ifconfig = spawnSync('ifconfig').stdout
+	let data = `${ifconfig}`
+	let nets = [], idx = 0
+	// create multidimentional array of interaces info
+	data.split('\n').forEach(s=>{
+		if( !(nets[idx] instanceof Array)) nets[idx] = []
+		if( s !== '' ) nets[idx].push( s )
+		else idx++
 	})
+	// filter out empty arrays && map out just the interface name
+	nets = nets.filter(nz=>nz.length>0).map(nz=>{
+		return nz[0].split(':')[0]
+	})
+	return nets
 }
 
 
@@ -46,5 +52,5 @@ function updateVendorMacs(callback) {
 
 module.exports = {
 	updateVendorMacs,
-    getMonDevice
+    getNetInterfaces
 }
