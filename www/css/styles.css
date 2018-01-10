@@ -1,4 +1,77 @@
-html, body {
-    border:0;
-    margin:0;
+@font-face {
+    font-family: 'Source_Code';
+    src: url('fonts/sourcecodepro-regular-webfont.woff2') format('woff2'),
+         url('fonts/sourcecodepro-regular-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+
 }
+
+html, body {
+    border:0; margin:0;
+    font-family: 'Source_Code',monospace,sans-serif;
+    font-weight: 400;
+    font-style: normal;
+    font-size: 18px;
+    letter-spacing: .01em;
+    color: #000;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+
+/*
+    BB Colors:
+    #000000
+    #ffffff
+    #E40477
+    #EBFCFF
+    #C4C4C4
+*/
+
+#app {
+    padding:15px;
+}
+
+    .header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-bottom: 1px solid #000;
+        margin: 0px 15% 50px 15%;
+        padding: 0px 30px;
+    }
+    @media (max-width: 800px) {
+        .header { margin: 0px 2% 50px 2%; }
+    }
+    @media (max-width: 475px) {
+        .header { padding: 0px 10px; }
+    }
+
+    .data-list {
+        padding: 5px 0px;
+    }
+    .data-list > * {
+        padding: 5px 0px;
+    }
+        .list-item-heading {
+            display: grid;
+            align-items: center;
+            grid-template-columns: 100px 400px 0px 300px;
+            max-width:800px;
+            margin:0 auto;
+        }
+        .list-item-detail {
+            background-color: #e6e6e6;
+            max-width: 66%;
+            margin: 8px auto;
+            padding: 2%;
+            border-left: 5px solid;
+        }
+    @media (max-width: 900px) {
+        .data-list > * { padding: 5px 0px 10px 0px; }
+        .list-item-heading {
+            width:470px;
+            grid-template-columns: 70px 400px;
+        }
+    }
