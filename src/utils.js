@@ -1,6 +1,10 @@
 const macLookup = require('mac-lookup')
 const { spawn, spawnSync } = require('child_process')
 
+// https://stackoverflow.com/questions/5366849/convert-1-to-0001-in-javascript
+function padLeft(nr, n, str){
+    return Array(n-String(nr).length+1).join(str||'0')+nr;
+}
 
 function getNetInterfaces(){
 	let data = spawnSync('ifconfig').stdout.toString()
@@ -51,5 +55,6 @@ function updateVendorMacs(callback) {
 
 module.exports = {
 	updateVendorMacs,
-    getNetInterfaces
+    getNetInterfaces,
+    padLeft
 }

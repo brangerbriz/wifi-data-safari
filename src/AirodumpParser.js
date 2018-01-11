@@ -2,6 +2,7 @@ const fs = require('fs')
 const EventEmitter = require('events')
 const _ = require('underscore')
 const macLookup = require('mac-lookup')
+const { padLeft } = require('./utils')
 
 class AirodumpParser extends EventEmitter {
 
@@ -45,6 +46,10 @@ class AirodumpParser extends EventEmitter {
 
 						networks.push({
 							mac: vals[0],
+							// is this a non-globally unique MAC address?
+							// if so there is a 99% chance the device is 
+							// randomizing the MAC address
+							randomMac: this._isRandomMAC(vals[0]),
 							firstSeen: vals[1],
 							lastSeen: vals[2],
 							channel: parseInt(vals[3]),
@@ -80,6 +85,10 @@ class AirodumpParser extends EventEmitter {
 					if (vals.length == 7) {
 						devices.push({
 							mac: vals[0],
+							// is this a non-globally unique MAC address?
+							// if so there is a 99% chance the device is 
+							// randomizing the MAC address
+							randomMac: this._isRandomMAC(vals[0]),
 							firstSeen: vals[1],
 							lastSeen: vals[2],
 							power: parseInt(vals[3]),
@@ -95,6 +104,17 @@ class AirodumpParser extends EventEmitter {
 				}
 			})
 		}
+
+		// useful random MAC address logging
+		// if (devices.length > 0) {
+		// 	let numRandom = devices.filter(x => x.randomMac).length
+		// 	console.log(`STATIONS: ${numRandom} random macs out of ${devices.length}`)
+		// }
+
+		// if (networks.length > 0) {
+		// 	let numRandom = networks.filter(x => x.randomMac).length
+		// 	console.log(`NETWORKS: ${numRandom} random macs out of ${networks.length}`)
+		// }
 
 		return { networks, devices }
 	}
@@ -165,6 +185,22 @@ class AirodumpParser extends EventEmitter {
 			console.log(`Emitting ${stats.length} stations`)
 			this.emit('stations', stats)
 		}
+	}
+
+	// https://arxiv.org/pdf/1703.02874
+	// http://www.noah.org/wiki/MAC_address
+	_isRandomMAC(macStr) {
+		// parse the XX:XX:XX:XX:XX:XX format to an int
+		const num = parseInt(macStr.replace(/:/g, ''), 16)
+		// convert it to a binary string
+		let binary = new Number(num).toString(2)
+		// left pad it
+		binary = padLeft(binary, 48)
+		// if the seventh most significant bit is set the MAC
+		// address is locally addressed, meaning it isn't unique
+		// and there is a 99% chance the device is using MAC
+		// randomization
+		return binary.charAt(6) == '1'
 	}
 }
 
