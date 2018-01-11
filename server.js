@@ -139,8 +139,9 @@ function spawnAirodump(iface) {
 		fs.readdir('data', (err, files) => {
 			
 			files = files.filter(file => file.indexOf('airodump-') == 0)
+			files = files.filter(file => file.match(/\d+/))
 			files.sort((a, b) => {
-				return parseInt(b.substring(9, 11)) - parseInt(a.substring(9, 11))
+				return parseInt(b.match(/\d+/)[0]) - parseInt(a.match(/\d+/)[0])
 			})
 
 			const filename = 'data/' + files[0]
