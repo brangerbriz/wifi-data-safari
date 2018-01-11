@@ -13,7 +13,7 @@ Vue.component('list-network-detail', {
         </div>
         <div>
             {{ printSeen(DataObj.firstSeen,DataObj.lastSeen,'network') }}
-            it was manufactured by <b>{{DataObj.vendor}}</b>,
+            it was made by <b>{{DataObj.vendor}}</b>,
             <span v-if="DataObj.privacy=='OPN'">
                 and it's <b>Open</b> (no security).
             </span>
