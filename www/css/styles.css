@@ -54,6 +54,9 @@ html, body {
     .data-list > * {
         padding: 5px 0px;
     }
+    .data-list .indented {
+        padding: 5px 0px 5px 100px;
+    }
         .list-item-heading {
             display: grid;
             align-items: center;

@@ -15,13 +15,23 @@
                 v-on:eyetoggle="togglePause()"
             ></the-header>
             <div class="data-list">
-                <list-item
+                <!-- <list-item
                     v-for="d in orderedDevices()"
                     v-bind:key="d.mac"
                     v-bind:data-obj="d"
                     v-bind:data-type="d.privacy ? 'network' : 'station'"
-                    class="list-item"
-                ></list-item>
+                ></list-item> -->
+                <div
+                    v-for="d in orderedDevices()"
+                    v-bind:key="d.mac"
+                    v-bind:data-obj="d">
+                    <span v-if="d.privacy">
+                        <list-network v-bind:data-obj="d"></list-network>
+                    </span>
+                    <span v-else>
+                        <list-station v-bind:data-obj="d"></list-station>
+                    </span>
+                </div>
             </div>
 
         </div>
@@ -30,8 +40,10 @@
         <!-- <script src="js/vue.min.js"></script> -->
         <script src="/socket.io/socket.io.js"></script>
         <script src="js/the-header.js"></script>
-        <script src="js/list-item.js"></script>
-        <script src="js/list-detail-network.js"></script>
+        <script src="js/list-station.js"></script>
+        <script src="js/list-station-detail.js"></script>
+        <script src="js/list-network.js"></script>
+        <script src="js/list-network-detail.js"></script>
         <script src="js/main.js"></script>
         <!-- <script src="js/test-events.js"></script> -->
     </body>

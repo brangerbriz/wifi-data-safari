@@ -1,5 +1,4 @@
-// TODO ADD VENDOR INFO TO SOCKET INFO????
-Vue.component('list-detail-network', {
+Vue.component('list-network-detail', {
     props:{
         DataObj:Object
     },
@@ -56,4 +55,3 @@ Vue.component('list-detail-network', {
         </div>
     </div>`
 })
-// <div v-for="d in DataObj.clients" v-bind:key="d.mac">{{d.mac}}</div>

@@ -1,4 +1,5 @@
 Vue.component('list-item', {
+    name:'list-item',
     data:function(){return {
         showDetail:false
     }},
@@ -41,6 +42,14 @@ Vue.component('list-item', {
                 v-bind:data-obj="DataObj"
                 v-bind:style="{borderColor:getColor}"
             ></list-detail-network>
+
+            <list-item
+                v-for="d in DataObj.clients"
+                v-bind:key="d.mac"
+                v-bind:data-obj="d"
+                v-bind:data-type="'station'"
+                class="indented"
+            ></list-item>
 
         </div>
         <div v-else-if="DataType=='station'">
