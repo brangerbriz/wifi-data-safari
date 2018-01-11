@@ -1,4 +1,4 @@
-const socket = io('http://localhost:1337')
+const socket = io(`http://${window.location.host}`)
 
 socket.on('networks',(ns)=>{
     if(!app.paused) ns.forEach((n)=>app.add('networks',n))
