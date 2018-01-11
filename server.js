@@ -12,6 +12,7 @@ const server = require('http').Server(app)
 const io = require('socket.io')(server)
 
 const airodumpParser = new AirodumpParser()
+let airodumpProc = null
 
 main()
 
@@ -50,8 +51,8 @@ function main() {
 	})
 
 	process.on('SIGINT', function() {
-	    console.log("Caught interrupt signal")
 	    cleanup()
+	    console.log('[info] exiting.')
 	    process.exit(0)
 	})
 }
@@ -94,13 +95,19 @@ function launch(args) {
 function cleanup() {
 	// kill airodump-ng
 	// stop mon0
+
+	if (airodumpProc) {
+		airodumpProc.kill()
+		console.log('[info] airodump-ng process exited')
+	}
+
 }
 
 function spawnAirodump(iface) {
 	
 	console.log(`[verbose] spawinging airodump-ng with ${iface}`)
 	// sudo airodump-ng mon0 --output-format csv -w output
-	const airodumpProc = spawn('airodump-ng', ['--output-format', 'csv', '--write', 'data/airodump', iface])
+	airodumpProc = spawn('airodump-ng', ['--output-format', 'csv', '--write', 'data/airodump', iface])
 	
 	airodumpProc.stderr.on('data', data => {
 		// no-op. airodump-ng won't write to csv unless its stderr is read from!
