@@ -6,14 +6,11 @@ Vue.component('list-network', {
         DataObj:Object
     },
     computed:{
-        getColor:function(){
-            let mac = this.DataObj.mac.split(':')
-            return `#${mac[0]}${mac[1]}${mac[2]}`
-        }
+        getColor:getColor
     },
-    template:`<div v-on:click="showDetail=!showDetail">
+    template:`<div>
 
-        <div class="list-item-heading">
+        <div class="list-item-heading" v-on:click="showDetail=!showDetail">
             <svg xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 373 373" width="50">
                 <title>flower</title>
@@ -29,7 +26,6 @@ Vue.component('list-network', {
                 <circle style="fill:#fff" cx="186.23" cy="186.8" r="42.16"/>
             </svg>
             <span> {{ DataObj.ssid.length>0 ? DataObj.ssid : 'un-named' }} </span>
-            <span class="spacer"></span>
             <span> {{ DataObj.power }} dBm </span>
         </div>
 
@@ -40,7 +36,16 @@ Vue.component('list-network', {
             v-bind:style="{borderColor:getColor}"
         ></list-network-detail>
 
-        <!-- TODO add DataObj.clients via list-station -->
+        <span v-if="Object.keys(DataObj.clients).length>0">
+            <list-station
+                v-for="c in DataObj.clients"
+                v-bind:key="c.mac"
+                v-bind:data-obj="c"
+                v-bind:data-nested="true"
+                class="indented"
+            ></list-station>
+        </span>
+
 
     </div>`
 })

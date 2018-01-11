@@ -55,26 +55,47 @@ html, body {
         padding: 5px 0px;
     }
     .data-list .indented {
-        padding: 5px 0px 5px 100px;
+        padding: 5px 0px 5px 195px;
     }
         .list-item-heading {
             display: grid;
             align-items: center;
-            grid-template-columns: 100px 400px 0px 100px;
+            grid-template-columns: 100px 400px 100px;
             max-width: 600px;
             margin:0 auto;
         }
         .list-item-detail {
             background-color: #e6e6e6;
-            max-width: 66%;
+            /*max-width: 66%;*/
+            width:90%;
+            max-width: 550px;
             margin: 8px auto;
             padding: 2%;
             border-left: 5px solid;
         }
     @media (max-width: 900px) {
         .data-list > * { padding: 5px 0px 10px 0px; }
+        .data-list .indented { padding: 5px 0px 5px 134px; }
         .list-item-heading {
-            width:470px;
-            grid-template-columns: 70px 400px;
+            width:430px;
+            grid-template-columns: 70px 260px 100px;
+        }
+    }
+    @media (max-width: 600px) {
+        .list-item-detail { font-size: 16px; padding: 12px; }
+        .data-list .indented { padding: 5px 0px 5px 18%; }
+    }
+    @media (max-width: 440px) {
+        html, body { font-size: 16px; }
+        .list-item-heading {
+            width: 370px;
+            grid-template-columns: 70px 200px 100px;
+        }
+    }
+    @media (max-width: 340px) {
+        html, body { font-size: 13px; }
+        .list-item-heading {
+            width: 320px;
+            grid-template-columns: 70px 150px 100px;
         }
     }

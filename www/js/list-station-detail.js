@@ -3,9 +3,22 @@ Vue.component('list-station-detail', {
         DataObj:Object
     },
     methods:{
-
+        formatSeconds:formatSeconds,
+        printSeen:printSeen
     },
     template:`<div>
-        
+        <div style="padding-bottom:10px">
+            MAC Address: <b>{{DataObj.mac}}</b>
+        </div>
+        <div>
+            {{ printSeen(DataObj.firstSeen,DataObj.lastSeen,'device') }}
+            it was manufactured by <b>{{DataObj.vendor}}</b>
+            <span v-if="DataObj.probes.length>0">
+                and has connected to the following networks:
+                <b>{{ DataObj.probes.join(',') }}</b>.
+            </span>
+
+        </div>
+
     </div>`
 })

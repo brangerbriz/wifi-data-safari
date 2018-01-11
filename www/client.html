@@ -19,12 +19,15 @@
                     v-for="d in orderedDevices()"
                     v-bind:key="d.mac"
                     v-bind:data-obj="d">
-                    <span v-if="d.privacy">
-                        <list-network v-bind:data-obj="d"></list-network>
-                    </span>
-                    <span v-else>
-                        <list-station v-bind:data-obj="d"></list-station>
-                    </span>
+                    <list-network
+                        v-if="d.privacy"
+                        v-bind:data-obj="d"
+                    ></list-network>
+                    <list-station
+                        v-else
+                        v-bind:data-obj="d"
+                        v-bind:data-nested="false"
+                    ></list-station>
                 </div>
             </div>
 
@@ -33,6 +36,7 @@
         <script src="js/vue.js"></script>
         <!-- <script src="js/vue.min.js"></script> -->
         <script src="/socket.io/socket.io.js"></script>
+        <script src="js/component-methods.js"></script>
         <script src="js/the-header.js"></script>
         <script src="js/list-station.js"></script>
         <script src="js/list-station-detail.js"></script>

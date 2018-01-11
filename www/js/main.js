@@ -63,18 +63,19 @@ const app = new Vue({
         },
         updateConnectedDevices:function(netMac,devMac){
             if( typeof this.networks[netMac]!=='undefined'){
-                let clients = []
+                let clients = {}
 
                 if( typeof devMac == 'undefined'){
                     // if called to add new network
                     for( let mac in this.stations ){
                         if(this.stations[mac].network==netMac){
-                            clients.push(mac)
+                            clients[mac] = this.stations[mac]
                         }
                     }
                 } else {
                     // if called to add new station
-                    clients = [ ...this.networks[netMac].clients, devMac ]
+                    clients = Object.assign({},this.networks[netMac].clients)
+                    clients[devMac] = this.stations[devMac]
                 }
 
                 this.$set(this.networks[netMac],'clients',clients)
@@ -90,7 +91,7 @@ const app = new Vue({
             if( !this[dict].hasOwnProperty(n.mac) )
                 this.$set(this[dict], n.mac, Object.assign({},n,{
                     remove:null,
-                    clients:[]
+                    clients:{}
                 }))
             else
                 clearTimeout( this[dict][n.mac].remove )
