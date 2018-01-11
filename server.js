@@ -1,9 +1,9 @@
-const { spawn } = require('child_process')
+const { spawn, spawnSync } = require('child_process')
 const { ArgumentParser } = require('argparse')
 const fs = require('fs')
 const isRoot = require('is-root')
 const { AirodumpParser } = require('./src/AirodumpParser')
-const { updateVendorMacs } = require('./src/utils')
+const { updateVendorMacs, getNetInterfaces } = require('./src/utils')
 const express = require('express')
 var commandExistsSync = require('command-exists').sync
 
@@ -13,6 +13,7 @@ const io = require('socket.io')(server)
 
 const airodumpParser = new AirodumpParser()
 let airodumpProc = null
+let iface = null
 
 main()
 
@@ -46,13 +47,12 @@ function main() {
 	}
 
 	process.on('uncaughtException', function (err) {
-		cleanup()
+		cleanup(args)
 		throw err
 	})
 
 	process.on('SIGINT', function() {
-	    cleanup()
-	    console.log('[info] exiting.')
+	    cleanup(args)
 	    process.exit(0)
 	})
 }
@@ -68,11 +68,19 @@ function launch(args) {
 			// an interface that the monX device airmon-ng created is mon0...
 			
 			// lets get our listen on!
-			spawnAirodump('mon0')
+			iface = getNetInterfaces().find(x => x.indexOf('mon') >= 0)
+
+			if (iface) {
+				spawnAirodump(iface)
+			} else {
+				console.error(`[error] could create a monitor mode device from ${iface}, exiting.`)
+				process.exit(1)
+			}
 		})
 	} else {
+		iface = args.iface
 		// lets get our listen on!
-		spawnAirodump(args.iface)
+		spawnAirodump(iface)
 	}
 
 	app.use(express.static('www'))
@@ -92,7 +100,7 @@ function launch(args) {
 	server.listen(args.port)
 }
 
-function cleanup() {
+function cleanup(args) {
 	// kill airodump-ng
 	// stop mon0
 
@@ -101,6 +109,12 @@ function cleanup() {
 		console.log('[info] airodump-ng process exited')
 	}
 
+	// if the interface was create with airmon-ng
+	// remove it
+	if (iface && args.iface.indexOf('mon') < 0) {
+		console.log(`[info] stopping ${iface} interface with airmon-ng`)
+		spawnSync('airmon-ng', ['stop', iface])
+	}
 }
 
 function spawnAirodump(iface) {

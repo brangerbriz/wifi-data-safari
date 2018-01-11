@@ -2,9 +2,8 @@ const macLookup = require('mac-lookup')
 const { spawn, spawnSync } = require('child_process')
 
 
-function getNetInterfaces(callback){
-	let ifconfig = spawnSync('ifconfig').stdout
-	let data = `${ifconfig}`
+function getNetInterfaces(){
+	let data = spawnSync('ifconfig').stdout.toString()
 	let nets = [], idx = 0
 	// create multidimentional array of interaces info
 	data.split('\n').forEach(s=>{
@@ -14,7 +13,7 @@ function getNetInterfaces(callback){
 	})
 	// filter out empty arrays && map out just the interface name
 	nets = nets.filter(nz=>nz.length>0).map(nz=>{
-		return nz[0].split(':')[0]
+		return nz[0].split(/\s|:/)[0]
 	})
 	return nets
 }
