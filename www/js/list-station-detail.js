@@ -7,9 +7,6 @@ Vue.component('list-station-detail', {
         printSeen:printSeen
     },
     template:`<div>
-        <div style="padding-bottom:10px">
-            MAC Address: <b>{{DataObj.mac}}</b>
-        </div>
         <div>
             {{ printSeen(DataObj.firstSeen,DataObj.lastSeen,'device') }}
             it was made by <b>{{DataObj.vendor}}</b>
