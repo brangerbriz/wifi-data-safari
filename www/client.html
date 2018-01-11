@@ -15,12 +15,6 @@
                 v-on:eyetoggle="togglePause()"
             ></the-header>
             <div class="data-list">
-                <!-- <list-item
-                    v-for="d in orderedDevices()"
-                    v-bind:key="d.mac"
-                    v-bind:data-obj="d"
-                    v-bind:data-type="d.privacy ? 'network' : 'station'"
-                ></list-item> -->
                 <div
                     v-for="d in orderedDevices()"
                     v-bind:key="d.mac"
