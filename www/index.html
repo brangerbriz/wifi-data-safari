@@ -5,15 +5,26 @@
         <meta charset="utf-8">
         <link rel="stylesheet" href="css/styles.css">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <link rel="apple-touch-icon" href="images/icon.png" />
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="white">
+
+        <meta name="msapplication-TileColor" content="#ffffff">
+        <meta name="msapplication-TileImage" content="images/icon.png">
+        <meta name="theme-color" content="#ffffff">
     </head>
     <body>
 
         <div id="app">
-            <the-header
-                v-bind:networks="networksCount"
-                v-bind:stations="stationsCount"
-                v-on:eyetoggle="togglePause()"
-            ></the-header>
+            <div class="fixed">
+                <the-header
+                    v-bind:networks="networksCount"
+                    v-bind:stations="stationsCount"
+                    v-on:eyetoggle="togglePause()"
+                ></the-header>
+            </div>
+            <div class="spacer"></div>
             <div class="data-list">
                 <div
                     v-for="d in orderedDevices()"
