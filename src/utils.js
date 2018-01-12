@@ -3,11 +3,11 @@ const { spawn, spawnSync } = require('child_process')
 
 // https://stackoverflow.com/questions/5366849/convert-1-to-0001-in-javascript
 function padLeft(nr, n, str){
-    return Array(n-String(nr).length+1).join(str||'0')+nr;
+	return Array(n-String(nr).length+1).join(str||'0')+nr;
 }
 
 function getNetInterfaces(){
-	let data = spawnSync('ifconfig').stdout.toString()
+	let data = spawnSync('ifconfig',['-a']).stdout.toString()
 	let nets = [], idx = 0
 	// create multidimentional array of interaces info
 	data.split('\n').forEach(s=>{
@@ -31,14 +31,14 @@ function updateVendorMacs(callback) {
 						  'https://linuxnet.ca/ieee/oui.txt'])
 
 	curl.on('close', (code) => {
-  		if (code != 0) {
-  			console.error(`[error] command "curl -f -L -o ` +
-  				          `node_modules/mac-lookup/oui.txt https://linuxnet.ca/ieee/oui.txt" ` +
-  				          `failed with exit code ${code}`)
-  			callback()
-  		} else {
-  			console.log('[verbose] rebuilding sqlite3 mac vendor database...')
-  			macLookup.rebuild((err) => {
+		if (code != 0) {
+			console.error(`[error] command "curl -f -L -o ` +
+						  `node_modules/mac-lookup/oui.txt https://linuxnet.ca/ieee/oui.txt" ` +
+						  `failed with exit code ${code}`)
+			callback()
+		} else {
+			console.log('[verbose] rebuilding sqlite3 mac vendor database...')
+			macLookup.rebuild((err) => {
 				// WARNING! THIS NEVER FIRES, WTF!!! Seems like the library eats
 				// this callback. Shame!
 				if (err) {
@@ -49,12 +49,12 @@ function updateVendorMacs(callback) {
 				console.log('[verbose] rebuilt sqlite3 mac vendor database')
 				callback()
 			})
-  		}
+		}
 	})
 }
 
 module.exports = {
 	updateVendorMacs,
-    getNetInterfaces,
-    padLeft
+	getNetInterfaces,
+	padLeft
 }
