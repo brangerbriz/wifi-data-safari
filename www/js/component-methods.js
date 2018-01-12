@@ -34,7 +34,7 @@ function printSeen(firstSeen,lastSeen,type){
         let f = string2Date(firstSeen)
         let l = string2Date(lastSeen)
         let time = this.formatSeconds( (l-f)/1000 )
-        return `You first saw this ${type} ${time} ago`
+        return `You first saw this ${type} ${time} ago,`
     }
 }
 
