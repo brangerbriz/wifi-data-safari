@@ -1,11 +1,15 @@
 @font-face {
     font-family: 'Source_Code';
     src: url('fonts/sourcecodepro-regular-webfont.woff2') format('woff2'),
-         url('fonts/sourcecodepro-regular-webfont.woff') format('woff');
+         url('fonts/sourcecodepro-regular-webfont.woff') format('woff'),
+         url('fonts/sourcecodepro-regular-webfont.ttf') format('truetype'),
+         url('fonts/sourcecodepro-regular-webfont.svg#source_code_proregular') format('svg');
     font-weight: normal;
     font-style: normal;
 
 }
+
+
 
 html, body {
     border:0; margin:0;
@@ -34,6 +38,10 @@ html, body {
     overflow-x: hidden;
 }
 
+    /* ~ ~ ~ ~ |||||| ~ ~ ~ ~ ~ */
+    /* ~ ~ ~ ~ HEADER ~ ~ ~ ~ ~ */
+    /* ~ ~ ~ ~ |||||| ~ ~ ~ ~ ~ */
+
     .header {
         display: flex;
         align-items: center;
@@ -50,6 +58,32 @@ html, body {
     @media (max-width: 475px) {
         .header { padding: 0px 10px; }
     }
+
+    /* ~ ~ ~ ~ ||||||| ~ ~ ~ ~ ~ */
+    /* ~ ~ ~ ~ FILTERS ~ ~ ~ ~ ~ */
+    /* ~ ~ ~ ~ ||||||| ~ ~ ~ ~ ~ */
+
+    .filter-list {
+        position: fixed;
+        bottom:0px;
+        background-color: #000;
+        padding: 10px;
+        width:100%;
+    }
+    .filter-list > * {
+        margin-bottom: 4px;
+        padding: 3px 10px;
+        color: #fff;
+        display: inline-block;
+        /*border-left: 2px solid #000;*/
+    }
+    @media (max-width: 800px) {
+        /*.filter-list { right: 15px; }*/
+    }
+
+    /* ~ ~ ~ ~ ||||||||| ~ ~ ~ ~ ~ */
+    /* ~ ~ ~ ~ DATA-LIST ~ ~ ~ ~ ~ */
+    /* ~ ~ ~ ~ ||||||||| ~ ~ ~ ~ ~ */
 
     .data-list {
         padding: 5px 0px;
@@ -69,7 +103,7 @@ html, body {
             margin:0 auto;
         }
         .list-item-detail {
-            background-color: #e6e6e6;
+            background-color: #eeeeee;
             /*max-width: 66%;*/
             width:85%;
             max-width: 550px;
@@ -77,6 +111,7 @@ html, body {
             padding: 2%;
             border-left: 5px solid;
         }
+        .filter { cursor:pointer; border-bottom:1px solid #000; }
     @media (max-width: 900px) {
         .data-list > * { padding: 5px 0px 10px 0px; }
         .data-list .indented { padding: 5px 0px 5px 134px; }
