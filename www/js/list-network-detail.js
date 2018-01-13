@@ -5,7 +5,8 @@ Vue.component('list-network-detail', {
     methods:{
         formatSeconds:formatSeconds,
         printSeen:printSeen,
-        printSecurity:printSecurity
+        printSecurity:printSecurity,
+        emitFilt:emitFilt
     },
     template:`<div>
         <div style="padding-bottom:10px">
@@ -13,14 +14,19 @@ Vue.component('list-network-detail', {
         </div>
         <div>
             {{ printSeen(DataObj.firstSeen,DataObj.lastSeen,'network') }}
-            it was made by <b>{{DataObj.vendor}}</b>,
+            it was made by
+            <b class="filter" v-on:click="emitFilt('vendor',DataObj.vendor)">
+                {{DataObj.vendor}}</b>,
             <span v-if="DataObj.privacy=='OPN'">
-                and it's <b>Open</b> (no security).
+                and it's
+                <b class="filter" v-on:click="emitFilt('privacy','OPN')">
+                    Open</b> (no security).
             </span>
             <span v-else>
-                and it's using <b>
-                {{ printSecurity(DataObj.privacy,DataObj.cipher,DataObj.auth) }}
-                </b> security.
+                and it's using
+                <b class="filter" v-on:click="emitFilt('privacy',DataObj.privacy)">
+                {{ printSecurity(DataObj.privacy,DataObj.cipher,DataObj.auth) }}</b>
+                security.
             </span>
         </div>
     </div>`

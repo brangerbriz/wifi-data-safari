@@ -33,6 +33,7 @@
                     <list-network
                         v-if="d.privacy"
                         v-bind:data-obj="d"
+                        v-on:filt="addFilter($event)"
                     ></list-network>
                     <list-station
                         v-else
@@ -41,7 +42,14 @@
                     ></list-station>
                 </div>
             </div>
-
+            <div v-if="filterList.length>0" class="filter-list">
+                <filter-item
+                    v-for="f in filterList"
+                    v-bind:key="f.type"
+                    v-bind:data-nfo="f"
+                    v-on:rmvfilt="removeFilter($event)"
+                ><filter-item>
+            </div>
         </div>
 
         <script src="js/vue.js"></script>
@@ -53,6 +61,7 @@
         <script src="js/list-station-detail.js"></script>
         <script src="js/list-network.js"></script>
         <script src="js/list-network-detail.js"></script>
+        <script src="js/filter-item.js"></script>
         <script src="js/main.js"></script>
         <!-- <script src="js/test-events.js"></script> -->
     </body>

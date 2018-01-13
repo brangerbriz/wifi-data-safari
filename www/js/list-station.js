@@ -9,6 +9,9 @@ Vue.component('list-station', {
     computed:{
         getColor:getColor
     },
+    methods:{
+        emitFilt:emitFilt
+    },
     template:`<div>
 
         <div class="list-item-heading" v-on:click="showDetail=!showDetail">
@@ -30,6 +33,7 @@ Vue.component('list-station', {
             v-if="showDetail"
             v-bind:data-obj="DataObj"
             v-bind:style="{borderColor:getColor}"
+            v-on:filt="emitFilt($event)"
         ></list-station-detail>
 
     </div>`
