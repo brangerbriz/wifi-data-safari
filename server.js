@@ -14,6 +14,14 @@ const io = require('socket.io')(server)
 const airodumpParser = new AirodumpParser()
 let airodumpProc = null
 let iface = null
+let airodumpCSVfile
+
+// wigle data loaded from json files
+let wigle = {
+	cached:{}, // any mac map-client asked for once before
+	data:[], // all the json wigle data
+	ranks:{}, // SSIDs && how often they show up in data
+}
 
 main()
 
@@ -52,8 +60,8 @@ function main() {
 	})
 
 	process.on('SIGINT', function() {
-	    cleanup(args)
-	    process.exit(0)
+		cleanup(args)
+		process.exit(0)
 	})
 }
 
@@ -80,8 +88,57 @@ function launch(args) {
 
 	app.use(express.static('www'))
 
+	// load wigle data
+	fs.readdirSync('data/wigle_data').forEach((file,i)=>{
+		fs.readFile(`data/wigle_data/${file}`,(err,data)=>{
+			if(err) throw err;
+			JSON.parse(data).forEach((obj)=>{
+				// update wigle data
+				wigle.data.push({
+					ssid:obj.ssid,
+					lat:obj.trilat,
+					lon:obj.trilong,
+					date:obj.lastupdt
+				})
+				// update ssid ranking
+				if( wigle.ranks.hasOwnProperty(obj.ssid) )
+					wigle.ranks[obj.ssid]++
+				else wigle.ranks[obj.ssid] = 1
+			})
+		})
+	})
+
 	io.on('connection', function (socket) {
 		console.log('[verbose] new client socket connection')
+
+		socket.on('get-ipinfo',()=>{
+			socket.emit('ipinfo', `${spawnSync('curl',['ipinfo.io']).stdout}`)
+		})
+
+		socket.on('get-wigle-data',(dev)=>{
+			if( !wigle.cached.hasOwnProperty(dev.mac) ||
+				wigle.cached[dev.mac].length!==dev.probes.length //needs update
+			){
+				wigle.cached[dev.mac] = []
+				wigle.data.forEach((d)=>{
+					if( dev.probes.indexOf(d.ssid)>=0 ){
+						let o = Object.assign({},d)
+						o.rank = wigle.ranks[d.ssid]
+						wigle.cached[dev.mac].push(o)
+					}
+				})
+			}
+			socket.emit('wigle-data',wigle.cached[dev.mac])
+		})
+
+		socket.on('get-init-data',()=>{
+			fs.readFile(airodumpCSVfile, 'utf8', (err, data) => {
+				if (err) throw error
+				data = data.toString()
+				socket.emit('init-data',airodumpParser.parseCSV(data).devices)
+			})
+		})
+
 		airodumpParser.on('networks', (networks) => {
 			socket.emit('networks', networks)
 		})
@@ -139,9 +196,9 @@ function spawnAirodump(iface) {
 				return parseInt(b.match(/\d+/)[0]) - parseInt(a.match(/\d+/)[0])
 			})
 
-			const filename = 'data/' + files[0]
-			console.log(`[verbose] poling ${filename} every 1000 ms`)
-			setInterval(() => airodumpParser.loadCSV(filename), 1000)
+			airodumpCSVfile = 'data/' + files[0]
+			console.log(`[verbose] poling ${airodumpCSVfile} every 1000 ms`)
+			setInterval(() => airodumpParser.loadCSV(airodumpCSVfile), 1000)
 		})
 	}, 1000)
 }
