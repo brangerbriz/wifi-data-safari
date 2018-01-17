@@ -30,7 +30,7 @@ Vue.component('list-station', {
 
         <list-station-detail
             class="list-item-detail"
-            v-if="showDetail"
+            v-if="showDetail && DataObj.probes"
             v-bind:data-obj="DataObj"
             v-bind:style="{borderColor:getColor}"
             v-on:filt="emitFilt($event)"
