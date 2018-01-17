@@ -16,13 +16,6 @@ let airodumpProc = null
 let iface = null
 let airodumpCSVfile
 
-// wigle data loaded from json files
-let wigle = {
-	cached:{}, // any mac map-client asked for once before
-	data:[], // all the json wigle data
-	ranks:{}, // SSIDs && how often they show up in data
-}
-
 main()
 
 function main() {
@@ -66,6 +59,7 @@ function main() {
 }
 
 function launch(args) {
+	
 	// if a monX interface wasn't specified, create one with airmon-ng
 	if (args.iface.indexOf('mon') != 0) {
 		console.log('[verbose] a monitor mode device wasn\'t provided, creating one with airmon-ng')
@@ -88,25 +82,36 @@ function launch(args) {
 
 	app.use(express.static('www'))
 
-	// load wigle data
-	fs.readdirSync('data/wigle_data').forEach((file,i)=>{
-		fs.readFile(`data/wigle_data/${file}`,(err,data)=>{
-			if(err) throw err;
-			JSON.parse(data).forEach((obj)=>{
-				// update wigle data
-				wigle.data.push({
-					ssid:obj.ssid,
-					lat:obj.trilat,
-					lon:obj.trilong,
-					date:obj.lastupdt
+		// wigle data loaded from json files
+	let wigle = {
+		cached:{}, // any mac map-client asked for once before
+		data:[], // all the json wigle data
+		ranks:{} // SSIDs && how often they show up in data
+	}
+
+	// if the user has wigle_data, load and serve it to the admin map
+	// using websockets
+	if (fs.existsSync('data/wigle_data')) {
+		// load wigle data
+		fs.readdirSync('data/wigle_data').forEach((file,i)=>{
+			fs.readFile(`data/wigle_data/${file}`,(err,data)=>{
+				if(err) throw err;
+				JSON.parse(data).forEach((obj)=>{
+					// update wigle data
+					wigle.data.push({
+						ssid:obj.ssid,
+						lat:obj.trilat,
+						lon:obj.trilong,
+						date:obj.lastupdt
+					})
+					// update ssid ranking
+					if( wigle.ranks.hasOwnProperty(obj.ssid) )
+						wigle.ranks[obj.ssid]++
+					else wigle.ranks[obj.ssid] = 1
 				})
-				// update ssid ranking
-				if( wigle.ranks.hasOwnProperty(obj.ssid) )
-					wigle.ranks[obj.ssid]++
-				else wigle.ranks[obj.ssid] = 1
 			})
 		})
-	})
+	}
 
 	io.on('connection', function (socket) {
 		console.log('[verbose] new client socket connection')
