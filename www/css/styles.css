@@ -35,6 +35,7 @@ html, body {
     text-rendering: optimizeLegibility;
 }
 
+.strike { text-decoration: line-through; opacity:0.5 }
 
 
 /* ~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._ */
@@ -183,3 +184,9 @@ html, body {
     }
     #devices > div { cursor: pointer; }
     .ranmac { color:#ff0000; }
+    .map-header {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+    }
+    .map-header > .map-button { font-size: 32px; cursor: pointer; }

@@ -59,7 +59,7 @@ function main() {
 }
 
 function launch(args) {
-	
+
 	// if a monX interface wasn't specified, create one with airmon-ng
 	if (args.iface.indexOf('mon') != 0) {
 		console.log('[verbose] a monitor mode device wasn\'t provided, creating one with airmon-ng')
@@ -82,7 +82,7 @@ function launch(args) {
 
 	app.use(express.static('www'))
 
-		// wigle data loaded from json files
+	// wigle data loaded from json files
 	let wigle = {
 		cached:{}, // any mac map-client asked for once before
 		data:[], // all the json wigle data
@@ -133,7 +133,10 @@ function launch(args) {
 					}
 				})
 			}
-			socket.emit('wigle-data',wigle.cached[dev.mac])
+			socket.emit('wigle-data',{
+				device:dev.mac,
+				data:wigle.cached[dev.mac]
+			})
 		})
 
 		socket.on('get-init-data',()=>{

@@ -20,12 +20,17 @@
         <div id="mapapp">
             <div id="map"></div>
             <div id="devices">
-                {{orderedDevices.length}} total devices
+                <div class="map-header">
+                    <span>{{orderedDevices.length}} devices</span>
+                    <span class="map-button" v-on:click="getCurGPS()">⊕</span>
+                    <span class="map-button" v-on:click="switchMap()">❖</span>
+                </div>
                 <hr>
                 <div
                     v-for="d in orderedDevices"
                     v-bind:key="d.mac"
-                    v-on:click="showDataFor(d.mac)">
+                    v-on:click="showDataFor(d.mac)"
+                    v-bind:class="{strike: d.flagged}">
                     {{ d.mac }} | {{ d.probes.length }}
                     SSID<span v-if="d.probes.length>1">s</span>
                     <span v-if="d.randomMac" class="ranmac">[random MAC]</span>
