@@ -39,6 +39,7 @@
                         v-else
                         v-bind:data-obj="d"
                         v-bind:data-nested="false"
+                        v-on:filt="addFilter($event)"
                     ></list-station>
                 </div>
             </div>

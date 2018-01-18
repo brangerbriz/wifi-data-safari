@@ -32,6 +32,7 @@ Vue.component('list-station', {
             class="list-item-detail"
             v-if="showDetail && DataObj.probes"
             v-bind:data-obj="DataObj"
+            v-bind:data-nested="DataNested"
             v-bind:style="{borderColor:getColor}"
             v-on:filt="emitFilt($event)"
         ></list-station-detail>
