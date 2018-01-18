@@ -23,16 +23,20 @@ Vue.component('list-station-detail', {
                 ago.
             </span>
 
-            It was made by
+            <span v-if="DataObj.vendor">
+                It was made by
+                <b v-if="DataNested">{{DataObj.vendor}}</b>
+                <b v-else
+                    class="filter"
+                    v-on:click="emitFilt('vendor',DataObj.vendor)"
+                > {{DataObj.vendor}}</b>
+            </span>
 
-            <b v-if="DataNested">{{DataObj.vendor}}</b>
-            <b v-else
-                class="filter"
-                v-on:click="emitFilt('vendor',DataObj.vendor)"
-            > {{DataObj.vendor}}</b>
 
             <span v-if="DataObj.probes.length>0">
-                and has previously connected to the following networks:
+                <span v-if="DataObj.vendor">and </span>
+                <span v-else>It</span>
+                has previously connected to the following networks:
                 <b> {{ DataObj.probes.join(', ') }}</b>
             </span>
 
