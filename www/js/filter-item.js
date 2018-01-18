@@ -10,6 +10,7 @@ Vue.component('filter-item', {
     template:`<div>
         <span style="cursor:pointer" v-on:click="removeFilt(DataNfo.type)">
             [X] </span>
-        {{ DataNfo.type }}: {{ DataNfo.data }}
+        {{ DataNfo.type }}:
+        {{ DataNfo.data=='station' ? 'device' : DataNfo.data }}
     </div>`
 })
