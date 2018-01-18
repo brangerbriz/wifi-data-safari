@@ -34,7 +34,7 @@ class AirodumpParser extends EventEmitter {
 						// the airodump-ng csv IS NOT a csv... I've said it before
 						// and it is going to be the death of me. Unnecessary white
 						// space everywhere, ', ' dilimeters, and INCONSISTENT uses
-						// of ',' as a delimiter in some occasions 
+						// of ',' as a delimiter in some occasions
 						// (the Cipher/Authentication seperator), but not always.
 						// when this is the case, the number of values is 14
 						// instead of 15, so we account for this by splitting on
@@ -47,7 +47,7 @@ class AirodumpParser extends EventEmitter {
 						networks.push({
 							mac: vals[0],
 							// is this a non-globally unique MAC address?
-							// if so there is a 99% chance the device is 
+							// if so there is a 99% chance the device is
 							// randomizing the MAC address
 							randomMac: this._isRandomMAC(vals[0]),
 							firstSeen: vals[1],
@@ -74,19 +74,31 @@ class AirodumpParser extends EventEmitter {
 			stats.forEach((line, i) => {
 				// skip the header
 				if (i != 0) {
-					
+
 					// the networks csv ends the last column with ', '
 					// if the value is none, but the stations csv does not (arg...)
 					// so we ad one to the end for consistency and to make parsing
 					// easier
 					if (line[line.length - 1] == ',') line += ' '
 
-					const vals = line.split(', ')
-					if (vals.length == 7) {
+					let vals = line.split(', ')
+					if (vals.length == 6 || vals.length == 7) {
+
+						// yet another INCONSISTENT use of ',' as a delimiter
+						// ( see Brannon's comment above for more info )
+						// in this case between the BSSID and Probed ESSIDs columns
+						if (vals.length == 6) {
+							vals = [].concat(
+								vals.slice(0, 5),
+								vals[5].slice(0,vals[5].indexOf(',')),
+								vals[5].slice(vals[5].indexOf(',')+1,vals[5].length)
+							)
+						}
+
 						devices.push({
 							mac: vals[0],
 							// is this a non-globally unique MAC address?
-							// if so there is a 99% chance the device is 
+							// if so there is a 99% chance the device is
 							// randomizing the MAC address
 							randomMac: this._isRandomMAC(vals[0]),
 							firstSeen: vals[1],
@@ -132,7 +144,7 @@ class AirodumpParser extends EventEmitter {
 			const { networks, devices } = this.parseCSV(data)
 
 			this._addVendorInfo(networks, nets => this._updateNetworks(nets))
-			this._addVendorInfo(devices, devs => this._updateStations(devs)) 
+			this._addVendorInfo(devices, devs => this._updateStations(devs))
 		})
 	}
 
@@ -148,7 +160,7 @@ class AirodumpParser extends EventEmitter {
 					callback(devices)
 				})
 			}
-		}) 
+		})
 	}
 
 	_updateNetworks(networks) {

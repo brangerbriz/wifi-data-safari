@@ -5,15 +5,26 @@
         <meta charset="utf-8">
         <link rel="stylesheet" href="css/styles.css">
         <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <link rel="apple-touch-icon" href="images/icon.png" />
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="white">
+
+        <meta name="msapplication-TileColor" content="#ffffff">
+        <meta name="msapplication-TileImage" content="images/icon.png">
+        <meta name="theme-color" content="#ffffff">
     </head>
     <body>
 
         <div id="app">
-            <the-header
-                v-bind:networks="networksCount"
-                v-bind:stations="stationsCount"
-                v-on:eyetoggle="togglePause()"
-            ></the-header>
+            <div class="fixed">
+                <the-header
+                    v-bind:networks="networksCount"
+                    v-bind:stations="stationsCount"
+                    v-on:eyetoggle="togglePause()"
+                ></the-header>
+            </div>
+            <div class="spacer"></div>
             <div class="data-list">
                 <div
                     v-for="d in orderedDevices()"
@@ -22,6 +33,7 @@
                     <list-network
                         v-if="d.privacy"
                         v-bind:data-obj="d"
+                        v-on:filt="addFilter($event)"
                     ></list-network>
                     <list-station
                         v-else
@@ -30,7 +42,14 @@
                     ></list-station>
                 </div>
             </div>
-
+            <div v-if="filterList.length>0" class="filter-list">
+                <filter-item
+                    v-for="f in filterList"
+                    v-bind:key="f.type"
+                    v-bind:data-nfo="f"
+                    v-on:rmvfilt="removeFilter($event)"
+                ><filter-item>
+            </div>
         </div>
 
         <script src="js/vue.js"></script>
@@ -42,6 +61,7 @@
         <script src="js/list-station-detail.js"></script>
         <script src="js/list-network.js"></script>
         <script src="js/list-network-detail.js"></script>
+        <script src="js/filter-item.js"></script>
         <script src="js/main.js"></script>
         <!-- <script src="js/test-events.js"></script> -->
     </body>

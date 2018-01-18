@@ -8,6 +8,9 @@ Vue.component('list-network', {
     computed:{
         getColor:getColor
     },
+    methods:{
+        emitFilt:emitFilt
+    },
     template:`<div>
 
         <div class="list-item-heading" v-on:click="showDetail=!showDetail">
@@ -34,6 +37,7 @@ Vue.component('list-network', {
             v-if="showDetail"
             v-bind:data-obj="DataObj"
             v-bind:style="{borderColor:getColor}"
+            v-on:filt="emitFilt($event)"
         ></list-network-detail>
 
         <span v-if="Object.keys(DataObj.clients).length>0">
