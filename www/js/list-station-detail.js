@@ -14,8 +14,8 @@ Vue.component('list-station-detail', {
             <b class="filter" v-on:click="emitFilt('vendor',DataObj.vendor)">
                 {{DataObj.vendor}}</b>
             <span v-if="DataObj.probes.length>0">
-                and has connected to the following networks:
-                <b> {{ DataObj.probes.join(',') }}</b>
+                and has previously connected to the following networks:
+                <b> {{ DataObj.probes.join(', ') }}</b>
             </span>
 
         </div>
