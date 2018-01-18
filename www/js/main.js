@@ -21,6 +21,13 @@ const app = new Vue({
     },
     methods:{
         // ----
+        // check if device is station or network
+        // ---- [used publicly]
+        isNetwork:function(d){
+            if( typeof d.privacy === "undefined" ) return false
+            else return true
+        },
+        // ----
         // add/remove a filter from the filterList
         // ---- [used publicly]
         addFilter:function(obj){
@@ -133,10 +140,6 @@ const app = new Vue({
                 }))
             else
                 clearTimeout( this[dict][n.mac].remove )
-
-            // debugging
-            // if( n.randomMac ) console.log(`randomMac: ${n.mac}, type:${dict}`)
-            if( n.randomMac && dict=="stations" ) console.log(`randomMac: ${n.mac}`)
 
             // update count
             this[dict+'Count'] = Object.keys(this[dict]).length
