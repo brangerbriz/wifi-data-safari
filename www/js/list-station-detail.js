@@ -10,8 +10,20 @@ Vue.component('list-station-detail', {
     },
     template:`<div>
         <div>
-            {{ printSeen(DataObj.firstSeen,DataObj.lastSeen,'device') }}
-            it was made by
+            <span v-if="DataObj.firstSeen==DataObj.lastSeen">
+                It's the first time seeing this
+                <b class="filter" v-on:click="emitFilt('type','station')">
+                    device</b>.
+            </span>
+            <span v-else>
+                You first saw this
+                <b class="filter" v-on:click="emitFilt('type','station')">
+                    device</b>
+                {{ printSeen(DataObj.firstSeen,DataObj.lastSeen) }}
+                ago.
+            </span>
+
+            It was made by
 
             <b v-if="DataNested">{{DataObj.vendor}}</b>
             <b v-else

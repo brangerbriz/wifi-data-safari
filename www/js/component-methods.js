@@ -27,15 +27,12 @@ function string2Date(str){
     let d1 = d[1].split(':')
     return new Date(d0[0],d0[1],d0[2],d1[0],d1[1],d1[2])
 }
-function printSeen(firstSeen,lastSeen,type){
-    if( firstSeen == lastSeen ){
-        return `It's the first time seeing this ${type},`
-    } else {
-        let f = string2Date(firstSeen)
-        let l = string2Date(lastSeen)
-        let time = this.formatSeconds( (l-f)/1000 )
-        return `You first saw this ${type} ${time} ago,`
-    }
+
+function printSeen(firstSeen,lastSeen){
+    let f = string2Date(firstSeen)
+    let l = string2Date(lastSeen)
+    let time = this.formatSeconds( (l-f)/1000 )
+    return time
 }
 
 // used by "list-network-detail" component to format the security message
