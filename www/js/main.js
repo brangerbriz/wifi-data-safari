@@ -21,13 +21,6 @@ const app = new Vue({
     },
     methods:{
         // ----
-        // check if device is station or network
-        // ---- [used publicly]
-        isNetwork:function(d){
-            if( typeof d.privacy === "undefined" ) return false
-            else return true
-        },
-        // ----
         // add/remove a filter from the filterList
         // ---- [used publicly]
         addFilter:function(obj){
