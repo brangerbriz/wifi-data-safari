@@ -28,7 +28,9 @@ Vue.component('list-network', {
                 <circle v-bind:style="{fill:getColor}" cx="247.35" cy="242.16" r="50.31"/>
                 <circle style="fill:#fff" cx="186.23" cy="186.8" r="42.16"/>
             </svg>
-            <span> {{ DataObj.ssid.length>0 ? DataObj.ssid : 'un-named' }} </span>
+            <span v-bind:class="{italic:DataObj.ssid.length==0}"> 
+                {{ DataObj.ssid.length>0 ? DataObj.ssid : 'nameless' }}
+            </span>
             <span> {{ DataObj.power }} dBm </span>
         </div>
 

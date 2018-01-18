@@ -36,6 +36,7 @@ html, body {
 }
 
 .strike { text-decoration: line-through; opacity:0.5 }
+.italic { font-style: italic; }
 
 
 /* ~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._ */
