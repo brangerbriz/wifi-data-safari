@@ -39,11 +39,13 @@ const app = new Vue({
             for(var n in this[dict]) clearTimeout( this[dict][n].remove )
         },
         resetTimeouts:function(dict){
-            for (var n in this[dict])
+            // TODO not working as i assumed?
+            for (var n in this[dict]){
                 this[dict][n].remove = setTimeout(()=>{
                     this.$delete(this[dict],n)
                     this[dict+'Count'] = Object.keys(this[dict]).length
                 },this.visiblityTime)
+            }
         },
         // ----
         // toggle the paused state
@@ -56,8 +58,12 @@ const app = new Vue({
                 this.killTimeouts('stations')
                 this.killTimeouts('networks')
             } else {
-                this.resetTimeouts('stations')
-                this.resetTimeouts('networks')
+                // this.resetTimeouts('stations')
+                // this.resetTimeouts('networks')
+                this.stations = {}
+                this.networks = {}
+                this.stationsCount = 0
+                this.networksCount = 0
             }
         },
         allDevices:function(){
