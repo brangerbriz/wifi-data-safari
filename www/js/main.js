@@ -13,7 +13,7 @@ const app = new Vue({
     data: {
         paused:false,
         filterList:[],
-        visiblityTime:6000,
+        visiblityTime:12000,
         networks:{},
         stations:{},
         networksCount:0,
