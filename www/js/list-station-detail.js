@@ -12,15 +12,38 @@ Vue.component('list-station-detail', {
         <div>
             <span v-if="DataObj.firstSeen==DataObj.lastSeen">
                 It's the first time seeing this
-                <b class="filter" v-on:click="emitFilt('type','station')">
-                    device</b>.
+                <b v-if="DataNested">device</b>
+                <b v-else
+                    class="filter"
+                    v-on:click="emitFilt('type','station')"
+                >device</b>.
             </span>
             <span v-else>
                 You first saw this
-                <b class="filter" v-on:click="emitFilt('type','station')">
-                    device</b>
+                <b v-if="DataNested">device</b>
+                <b v-else
+                    class="filter"
+                    v-on:click="emitFilt('type','station')"
+                >device</b>
                 {{ printSeen(DataObj.firstSeen,DataObj.lastSeen) }}
                 ago.
+            </span>
+
+            <span v-if="DataObj.randomMac">
+                This device is likely
+                <b v-if="DataNested">randomizing</b>
+                <b v-else
+                    class="filter"
+                    v-on:click="emitFilt('randomMac',DataObj.randomMac)"
+                >randomizing</b> their MAC address.
+            </span>
+            <span v-else>
+                This device is using a
+                <b v-if="DataNested">unique</b>
+                <b v-else
+                    class="filter"
+                    v-on:click="emitFilt({type:'randomMac',data:DataObj.randomMac})"
+                >unique</b> their MAC address.
             </span>
 
             <span v-if="DataObj.vendor">
