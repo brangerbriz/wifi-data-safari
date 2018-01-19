@@ -1,6 +1,7 @@
 Vue.component('list-network', {
     data:function(){return {
-        showDetail:false
+        showDetail:false,
+        hackerMAC: 'C4:E9:84:D7:A5:D2'
     }},
     props:{
         DataObj:Object
@@ -13,7 +14,10 @@ Vue.component('list-network', {
     },
     template:`<div>
 
-        <div class="list-item-heading" v-on:click="showDetail=!showDetail">
+        <div
+            class="list-item-heading"
+            v-bind:class="{hacker:DataObj.mac==hackerMAC}"
+            v-on:click="showDetail=!showDetail">
             <svg xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 373 373" width="50">
                 <title>flower</title>
@@ -28,7 +32,7 @@ Vue.component('list-network', {
                 <circle v-bind:style="{fill:getColor}" cx="247.35" cy="242.16" r="50.31"/>
                 <circle style="fill:#fff" cx="186.23" cy="186.8" r="42.16"/>
             </svg>
-            <span v-bind:class="{italic:DataObj.ssid.length==0}"> 
+            <span v-bind:class="{italic:DataObj.ssid.length==0}">
                 {{ DataObj.ssid.length>0 ? DataObj.ssid : 'nameless' }}
             </span>
             <span> {{ DataObj.power }} dBm </span>
