@@ -11,7 +11,11 @@ Vue.component('list-network-detail', {
     template:`<div>
         <div style="padding-bottom:10px">
             MAC Address: <b>{{DataObj.mac}}</b>
+            <div v-if="DataObj.lanIP!=='0.0.0.0'">
+                LAN IP: <b>{{DataObj.lanIP}}</b>
+            </div>
         </div>
+
         <div>
             <span v-if="DataObj.firstSeen==DataObj.lastSeen">
                 It's the first time seeing this
