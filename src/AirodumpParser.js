@@ -61,7 +61,8 @@ class AirodumpParser extends EventEmitter {
 							beacons: parseInt(vals[9]),
 							iv: parseInt(vals[10]),
 							lanIP: vals[11].split('.').map(x => parseInt(x)).join('.'),
-							ssid: vals[13].trim().replace('\r', '')
+							ssid: vals[13].trim().replace('\r', ''),
+							type:"network"
 						})
 					// don't worry about lines that are empty strings
 					} else if (vals.length > 1) {
@@ -106,7 +107,8 @@ class AirodumpParser extends EventEmitter {
 							power: parseInt(vals[3]),
 							packets: parseInt(vals[4]),
 							network: vals[5].trim() == '(not associated)' ? null : vals[5].trim(),
-							probes: vals[6].trim().split(',').filter(x => x != '')
+							probes: vals[6].trim().split(',').filter(x => x != ''),
+							type:"station"
 						})
 					// don't worry about lines that are empty strings
 					} else if (vals.length > 1) {

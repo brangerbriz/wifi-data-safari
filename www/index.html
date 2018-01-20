@@ -31,7 +31,7 @@
                     v-bind:key="d.mac"
                     v-bind:data-obj="d">
                     <list-network
-                        v-if="d.privacy"
+                        v-if="d.type=='network'"
                         v-bind:data-obj="d"
                         v-on:filt="addFilter($event)"
                     ></list-network>
@@ -39,6 +39,7 @@
                         v-else
                         v-bind:data-obj="d"
                         v-bind:data-nested="false"
+                        v-on:filt="addFilter($event)"
                     ></list-station>
                 </div>
             </div>

@@ -24,7 +24,10 @@ Vue.component('list-station', {
             <span> {{ DataObj.mac }} </span>
             <span v-if="!DataNested">
                 <span v-if="DataObj.network" style="color:red">connected?</span>
-                <span v-else>probing</span>
+                <span v-else>
+                    {{ DataObj.probes.length }} probe<span
+                     v-if="DataObj.probes.length!==1">s</span>
+                </span>
             </span>
         </div>
 
@@ -32,6 +35,7 @@ Vue.component('list-station', {
             class="list-item-detail"
             v-if="showDetail"
             v-bind:data-obj="DataObj"
+            v-bind:data-nested="DataNested"
             v-bind:style="{borderColor:getColor}"
             v-on:filt="emitFilt($event)"
         ></list-station-detail>

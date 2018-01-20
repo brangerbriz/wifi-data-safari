@@ -11,10 +11,26 @@ Vue.component('list-network-detail', {
     template:`<div>
         <div style="padding-bottom:10px">
             MAC Address: <b>{{DataObj.mac}}</b>
+            <div v-if="DataObj.lanIP!=='0.0.0.0'">
+                LAN IP: <b>{{DataObj.lanIP}}</b>
+            </div>
         </div>
+
         <div>
-            {{ printSeen(DataObj.firstSeen,DataObj.lastSeen,'network') }}
-            it was made by
+            <span v-if="DataObj.firstSeen==DataObj.lastSeen">
+                It's the first time seeing this
+                <b class="filter" v-on:click="emitFilt('type','network')">
+                    network</b>.
+            </span>
+            <span v-else>
+                You first saw this
+                <b class="filter" v-on:click="emitFilt('type','network')">
+                    network</b>
+                {{ printSeen(DataObj.firstSeen,DataObj.lastSeen) }}
+                ago.
+            </span>
+
+            It was made by
             <b class="filter" v-on:click="emitFilt('vendor',DataObj.vendor)">
                 {{DataObj.vendor}}</b>,
             <span v-if="DataObj.privacy=='OPN'">
