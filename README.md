@@ -42,6 +42,9 @@ Once you've identified which devices belong to which humans you can start to gat
 
 War driving is the process of geo-tagging beacon frames from wireless access points in an attempt to understand where in the world they are physically located. By collecting data in this fashion, large datasets can be amassed and used to identify where the networks a device is probing for exist. In fact, Google street view cars have been reported to be constantly war driving, creating collection of geo-tagged networks to use in their location services. By using cars, and even their user's android devices as they go about their daily life, they can create complex maps of beaconing networks that can be used later to improve on GPS estimates, or identify where you are located even when you have GPS location turned off.
 
+![WiGLE Data](images/wigle.png)
+War driving data from [WiGLE.net](https://wigle.net/)
+
 The practice of war driving is often associated with amateur network collection. The [WiGLE website](http://wigle.net) is a crowdsourced war driving dataset that is available for public use. For this workshop, we downloaded WiGLE data from the Los Angeles area in order to offer a map view feature to workshop participants. Probe requests that are collected during the data safari can be queried against this dataset to provide information about where the device owner may spend their time.
 
 ### Honeypot & Evil Twin Networks
