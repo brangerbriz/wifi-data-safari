@@ -45,7 +45,7 @@ War driving is the process of geo-tagging beacon frames from wireless access poi
 
 ![WiGLE Data](images/wigle.png)
 
-> War driving data from [WiGLE.net](https://wigle.net/)
+> [WiGLE.net](https://wigle.net/) War driving data from Chicago, IL. Each point represents a WiFi network. 
 
 The practice of war driving is often associated with amateur network collection. The [WiGLE website](http://wigle.net) is a crowdsourced war driving dataset that is available for public use. For this workshop, we downloaded WiGLE data from the Los Angeles area in order to offer a map view feature to workshop participants. Probe requests that are collected during the data safari can be queried against this dataset to provide information about where the device owner may spend their time.
 
