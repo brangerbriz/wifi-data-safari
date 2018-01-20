@@ -8,6 +8,10 @@ The WiFi Data Safari Workshop is a continuation of the [Probe Kit project](http:
 
 For participants of the workshop, this document serves as a reference for the material that we cover during the workshop. For those of you who wandered here from the far reaches of the Internet, welcome. We hope that you will learn something while you are here, even if you couldn't make it to the workshop.
 
+![Workshop software screenshot](images/workshop-screenshot.png)
+
+> Screenshot of the data safari software used in the workshop
+
 ### The Internet Landscape
 
 The Internet is a complex network of networks, linked together through industrial communications infrastructure. Many players are involved, from router and device manufacturers to Internet Service Provider (ISP), Tier 1 networks , Internet Exchange Points (IXP), trans-oceanic fiber optic cable, and international standards committees. Lots of machines talking to machines and people talking to people. Surprising to some, most of the Internet is connected by fiber optics and copper cable. It's usually only the last stretch from your home router or a cell tower to your portable device that occurs over WiFi, a wireless radio frequency protocol that occupies the 2.4 GHz and 5 GHz frequency bands of electromagnetic spectrum (along side other commercial devices like your microwave and garage door openers). Its this protocol that we will be taking a look at particularly in this workshop. The 802.11 WiFi standard was introduced in 1997, before anyone had a phone that could connect to the Internet. As such, the specification was introduced without the security considerations and requirements that are necessary over twenty years later, when everyone walks around with a wireless device on their person.
