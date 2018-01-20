@@ -13,6 +13,7 @@ For participants of the workshop, this document serves as a reference for the ma
 The Internet is a complex network of networks, linked together through industrial communications infrastructure. Many players are involved, from router and device manufacturers to Internet Service Provider (ISP), Tier 1 networks , Internet Exchange Points (IXP), trans-oceanic fiber optic cable, and international standards committees. Lots of machines talking to machines and people talking to people. Surprising to some, most of the Internet is connected by fiber optics and copper cable. It's usually only the last stretch from your home router or a cell tower to your portable device that occurs over WiFi, a wireless radio frequency protocol that occupies the 2.4 GHz and 5 GHz frequency bands of electromagnetic spectrum (along side other commercial devices like your microwave and garage door openers). Its this protocol that we will be taking a look at particularly in this workshop. The 802.11 WiFi standard was introduced in 1997, before anyone had a phone that could connect to the Internet. As such, the specification was introduced without the security considerations and requirements that are necessary over twenty years later, when everyone walks around with a wireless device on their person. 
 
 ![United States Frequency Allocations](images/frequency-allocations.jpg)
+> United States Electromagnetic Frequency Allocations
 
 ### Probe Requests and Beacon Frames
 
@@ -43,7 +44,8 @@ Once you've identified which devices belong to which humans you can start to gat
 War driving is the process of geo-tagging beacon frames from wireless access points in an attempt to understand where in the world they are physically located. By collecting data in this fashion, large datasets can be amassed and used to identify where the networks a device is probing for exist. In fact, Google street view cars have been reported to be constantly war driving, creating collection of geo-tagged networks to use in their location services. By using cars, and even their user's android devices as they go about their daily life, they can create complex maps of beaconing networks that can be used later to improve on GPS estimates, or identify where you are located even when you have GPS location turned off.
 
 ![WiGLE Data](images/wigle.png)
-War driving data from [WiGLE.net](https://wigle.net/)
+
+> War driving data from [WiGLE.net](https://wigle.net/)
 
 The practice of war driving is often associated with amateur network collection. The [WiGLE website](http://wigle.net) is a crowdsourced war driving dataset that is available for public use. For this workshop, we downloaded WiGLE data from the Los Angeles area in order to offer a map view feature to workshop participants. Probe requests that are collected during the data safari can be queried against this dataset to provide information about where the device owner may spend their time.
 
