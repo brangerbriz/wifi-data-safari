@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title> WiFi Data Safari - Habitat</title>
+        <meta charset="utf-8">
+        <link rel="stylesheet" href="../css/styles.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <link rel="apple-touch-icon" href="images/icon.png" />
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="white">
+
+        <meta name="msapplication-TileColor" content="#ffffff">
+        <meta name="msapplication-TileImage" content="images/icon.png">
+        <meta name="theme-color" content="#ffffff">
+    </head>
+    <body>
+
+        <div id="app">
+            <section style="padding:20px">
+                <div> {{Object.keys(stations).length}} stations </div>
+                <hr style="width:200px;float:left"><br>
+                <div v-for="s in stations">{{s.mac}}</div>
+            </section>
+        </div>
+        <script src="../js/vue.js"></script>
+        <!-- <script src="../js/vue.min.js"></script> -->
+        <script src="/socket.io/socket.io.js"></script>
+        <script src="js/three.min.js"></script>
+        <script src="js/stats.min.js"></script>
+        <script src="js/OrbitControls.js"></script>
+        <script src="js/boid.js"></script>
+        <script src="js/butterfly.js"></script>
+        <script src="js/Habitat.js"></script>
+        <script src="js/main.js"></script>
+        <!-- <script src="../js/test-events.js"></script> -->
+
+    </body>
+</html>
