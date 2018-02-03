@@ -3,11 +3,11 @@ socket.on('networks',(ns)=>{ns.forEach((n)=>app.addDevice(n))})
 socket.on('stations',(ss)=>{ss.forEach((s)=>app.addDevice(s))})
 
 const habitat = new Habitat({
-    debug:true,
+    debug:false,
     // test:500,
-    fog: true,
-    bgColor:'#cce0ff',
-    worldSize:[1000, 800, 800]
+    fog: false,
+    bgColor:'#c4e7f2',
+    worldSize:[1200, 600, 800]
 })
 
 const app = new Vue({

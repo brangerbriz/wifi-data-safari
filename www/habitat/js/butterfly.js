@@ -20,23 +20,24 @@ var Butterfly = function () {
         new THREE.Vector2(  0,  0 ),
         new THREE.Vector2(  1,  0 ),
         new THREE.Vector2(  1, .5 )
-    ]);  
+    ]);
 	this.faceVertexUvs[ 0 ].push([
         new THREE.Vector2(  1, .5 ),
         new THREE.Vector2(  0, .5 ),
         new THREE.Vector2(  0,  0 )
-    ]);  
+    ]);
     this.faceVertexUvs[ 0 ].push([
         new THREE.Vector2( 0,  1 ),
         new THREE.Vector2( 0, .5 ),
         new THREE.Vector2( 1, .5 )
-    ]);  
+    ]);
     this.faceVertexUvs[ 0 ].push([
         new THREE.Vector2( 1, .5 ),
         new THREE.Vector2( 1,  1 ),
         new THREE.Vector2( 0,  1 )
-    ]);  
-	// this.computeFaceNormals();
+    ]);
+    
+	this.computeFaceNormals();
 
 	function v( x, y, z ) {
 
