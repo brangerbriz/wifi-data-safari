@@ -39,14 +39,24 @@ class Habitat {
         this.renderer = null
         // meshes && such
         this.gndMesh = null
+        this.elevation = 25
         this.gndHeights = []
         this.butterflies = []
+        this.flowers = []
         // options
         this.bgColor = (c && c.bgColor) ? c.bgColor : 0xffffff
         this.fog = (c && c.fog) ? c.fog : false
         this.worldSize = (c && c.worldSize) ? c.worldSize : [1000, 1000, 800]
         this.debug = (c && c.debug) ? c.debug : false
         this.test = (c && c.test) ? c.test : false
+    }
+
+    norm(value, min, max){ return (value - min) / (max - min) }
+
+    lerp(norm, min, max){ return (max - min) * norm + min }
+
+    map(value, sourceMin, sourceMax, destMin, destMax){
+        return this.lerp(this.norm(value, sourceMin, sourceMax), destMin, destMax)
     }
 
     ran(min,max,floor){
@@ -135,24 +145,41 @@ class Habitat {
         this.butterflies.push( b )
     }
 
-    addFlower(){
+    addFlower(dev){
         function onError(e){ console.log('there was an error') }
         function onProgress(xhr){
             console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' )
         }
 
+        let clr = [
+            parseInt(dev.mac.split(':')[0],16),
+            parseInt(dev.mac.split(':')[1],16),
+            parseInt(dev.mac.split(':')[2],16)
+        ]
+
+        let sec = (dev.privacy=="OPN") ? 3 : 2
+
+        let pos = [
+            this.map(parseInt(dev.mac.split(':')[5],16),
+                0, 255, -this.worldSize[0]/2, this.worldSize[0]/2),
+            -this.worldSize[1]/2 - this.elevation,
+            this.map(dev.power,
+                0,-100,this.worldSize[2]/5.5,-this.worldSize[2]/2)
+        ]
+
         let buffloader = new THREE.BufferGeometryLoader()
         buffloader.load('js/sunflower.json',(geometry)=>{
             let materials = [
                 new THREE.MeshPhongMaterial({color:'#7c5106'}),
-                new THREE.MeshPhongMaterial({color:'#efe864'}), //TODO MAC color
+                new THREE.MeshPhongMaterial({color:'rgb('+clr+')'}),
                 new THREE.MeshPhongMaterial({color:'#b1f49f'})
+                // index 3 is nothing, ie. make things disapear
             ]
             let material = new THREE.MeshFaceMaterial(materials)
-            this.flower = new THREE.Mesh( geometry, material )
-            this.flower.geometry.scale(100,100,100)
-            this.flower.position.y = -this.worldSize[1]*0.25
-            this.scene.add( this.flower )
+            let flower = new THREE.Mesh( geometry, material )
+                flower.geometry.scale(50,50,50)
+                flower.position.set(...pos)
+                flower.rotation.y = this.ran(-1,1)
 
             // assign groups with  corresponding  materialIndex
             let group = 0
@@ -161,16 +188,16 @@ class Habitat {
                 let data = JSON.parse(jsonString)
                 for (let part in data) {
                     data[part].start.forEach((s,i)=>{
-                        let idx
+                        let idx // index for material in materials array above
                         switch(part){
                             case 'seeds': idx=0;break;
                             case 'pedals': idx=1;break;
                             case 'stem': idx=2;break;
-                            case 'leaf1': idx=2;break;
-                            case 'leaf2': idx=2;break;
-                            case 'leaf3': idx=2;break;
+                            case 'leaf1': idx=sec;break;
+                            case 'leaf2': idx=sec;break;
+                            case 'leaf3': idx=sec;break;
                         }
-                        this.flower.geometry.groups[group] = {
+                        flower.geometry.groups[group] = {
                             start:data[part].start[i],
                             count:data[part].count[i],
                             materialIndex:idx
@@ -178,42 +205,42 @@ class Habitat {
                         group++
                     })
                 }
-
-
+                // NOTE limit flowers for testing NOTE
+                if(this.flowers.length < 10){
+                    flower.scale.y = 0
+                    this.scene.add( flower )
+                    this.flowers.push( flower )
+                    new TWEEN.Tween(flower.scale)
+                        .to({ x:1, y:1, z:1 }, 500)
+                        .easing(TWEEN.Easing.Sinusoidal.Out)
+                        .start()
+                }
             }/*,onProgress,onError*/) // for debug
 
             // morph...
-            // for(let i=0; i<this.flower.geometry.index.count; i++){
-            //     let x = this.ran(0,100)
-            //     let y = this.ran(0,100)
-            //     let z = this.ran(0,100)
-            //     this.flower.geometry.attributes.position.setXYZ( i,x,y,z )
-            //     this.flower.geometry.attributes.position.needsUpdate = true
+            // for(let i=0; i<flower.geometry.index.count; i++){
+            //     let v = [i,this.ran(0,100),this.ran(0,100),this.ran(0,100)]
+            //     flower.geometry.attributes.position.setXYZ( ...v )
+            //     flower.geometry.attributes.position.needsUpdate = true
             // }
-        }/*,onProgress,onError*/) // for debug
 
-        // TODO
-        // rather than global .flower, make these like butterflies
-        // tween when appear, this.flower.scale.y = 1
-        // randomly decide how many of the 3 leaves to draw
-        // assign pedal color based on MAC
+        }/*,onProgress,onError*/) // for debug
     }
 
     createGnd(){
-        let elevation = 50
         this.gndMesh = new THREE.Mesh(
-            new THREE.PlaneGeometry( 4000, 4000, 40, 40 ),
+            new THREE.PlaneGeometry( 4000, 4000, 100, 100 ),
             new THREE.MeshLambertMaterial({color:'#b1f49f'})
             // new THREE.MeshNormalMaterial()
         )
 
         for (let i = 0; i < this.gndMesh.geometry.vertices.length; i++) {
-          this.gndHeights[i] = this.ran(0,elevation)
+          this.gndHeights[i] = this.ran(0,this.elevation)
           this.gndMesh.geometry.vertices[i].z = this.gndHeights[i]
         }
 
         this.gndMesh.geometry.computeFlatVertexNormals()
-        this.gndMesh.position.y = -(elevation + this.worldSize[1]/2)
+        this.gndMesh.position.y = -(this.elevation + this.worldSize[1]/2)
         this.gndMesh.rotation.x = -Math.PI/2
         this.scene.add( this.gndMesh )
     }
@@ -237,8 +264,8 @@ class Habitat {
         // mouse orbit camera controls
         this.cntrl=new THREE.OrbitControls(this.camera,this.renderer.domElement)
         // this.cntrl.maxPolarAngle = Math.PI * 0.5
-        this.camera.position.set(0,-200,400)
-        this.camera.rotation.set(0.3,0,0)
+        this.camera.position.set(0,-this.worldSize[1]/2.5,this.worldSize[1]/1.5)
+        this.camera.rotation.set(0.18,0,0)
     }
 
     winResize(){
@@ -283,9 +310,6 @@ class Habitat {
             // spotLight.position.set(0, 1500, 0)
         // this.scene.add(spotLight)  TODO to spotLight or not to spotLight
 
-        // testing addFlower
-        this.addFlower()
-
         // ground
         this.createGnd()
 
@@ -319,6 +343,9 @@ class Habitat {
             butterfly.boid.run( this.butterflies.map((b)=>b.boid) )
             butterfly.mesh.update( butterfly.boid )
         })
+
+        // update any flowers that need to spring up
+        TWEEN.update()
 
         this.renderer.render( this.scene, this.camera )
     }

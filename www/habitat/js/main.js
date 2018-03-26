@@ -5,7 +5,7 @@ socket.on('stations',(ss)=>{ss.forEach((s)=>app.addDevice(s))})
 const habitat = new Habitat({
     debug:false,
     // test:500,
-    fog: false,
+    fog: true,
     bgColor:'#c4e7f2',
     worldSize:[1200, 600, 800]
 })
@@ -32,6 +32,12 @@ const app = new Vue({
                         Object.assign({},dev) )
                 // create new butterfly for this device
                 if( dev.type=='station') habitat.addButterfly( dev )
+                // or create new flower for this device
+                else if( dev.type=='network'){
+                    // TODO maybe limit flowers to "active networks"
+                    // ie. only networks w/devices associated?
+                    if(dev.ssid!=="") habitat.addFlower( dev )
+                }
             }
         }
     }
