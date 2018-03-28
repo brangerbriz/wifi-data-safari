@@ -1,0 +1,75 @@
+/* ~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._ */
+/* -~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=* */
+/* ~-._.-~=*=~-._.-~=*=~-._.                 ._.-~=*=~-._.-~=*=~-._.-~=*=~-._ */
+/* -~=*=~-._.-~=*=~-._.-~=*=~  GENERAL CSS  ~=*=~-._.-~=*=~-._.-~=*=~-._.-~=* */
+/* ~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._ */
+/* -~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=* */
+/* ~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._ */
+
+@font-face {
+    font-family: 'Source_Code';
+    src: url('../../css/fonts/sourcecodepro-regular-webfont.woff2') format('woff2'),
+         url('../../css/fonts/sourcecodepro-regular-webfont.woff') format('woff'),
+         url('../../css/fonts/sourcecodepro-regular-webfont.ttf') format('truetype'),
+         url('../../css/fonts/sourcecodepro-regular-webfont.svg#source_code_proregular')
+         format('svg');
+    font-weight: normal;
+    font-style: normal;
+
+}
+
+/*
+    BB Colors: #000000 #ffffff #E40477 #EBFCFF #C4C4C4
+*/
+
+html, body {
+    border:0; margin:0;
+    font-family: 'Source_Code',monospace,sans-serif;
+    font-weight: 400;
+    font-style: normal;
+    font-size: 18px;
+    letter-spacing: .01em;
+    color: #000;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+
+.strike { text-decoration: line-through; opacity:0.5 }
+.italic { font-style: italic; }
+/* ~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._ */
+/* -~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=* */
+/* ~-._.-~=*=~-._.-~=*=~-._.                 ._.-~=*=~-._.-~=*=~-._.-~=*=~-._ */
+/* -~=*=~-._.-~=*=~-._.-~=*=~-.  MAP CSS  .-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=* */
+/* ~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._ */
+/* -~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=* */
+/* ~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._ */
+
+
+#mapapp {
+    /*overflow-x: hidden;*/
+}
+    /*#map {
+        position: fixed;
+        top: 0px; left: 0px;
+        width:100%; height:100%;
+    }*/
+    #devices {
+        background-color: #fff;
+        border: 1px solid #000;
+        box-sizing: border-box;
+        padding: 15px;
+        max-height: 90%;
+        position: absolute;
+        top: 5%; right: 15px;
+        z-index: 2;
+        overflow-y: scroll;
+    }
+    #devices > div { cursor: pointer; }
+    .ranmac { color:#ff0000; }
+    .map-header {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+    }
+    .map-header > .map-button { font-size: 32px; cursor: pointer; }

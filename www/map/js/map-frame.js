@@ -1,16 +1,10 @@
-const socket = io(`http://${window.location.host}`)
-socket.on('init-data',d=>mapapp.init(d))
-socket.on('ipinfo',gps=>mapapp.setView(gps))
-socket.on('wigle-data',w=>mapapp.drawData(w.device,w.data))
-socket.on('stations',(ss)=>{ ss.forEach((s)=>mapapp.add(s)) })
-
-const mapapp = new Vue({
-    el: '#mapapp',
-    data: {
+Vue.component('map-frame', {
+    data:function(){return {
         map:null,
         mapData:{
-            // using Thousand Oaks Museum Coords as default
-            defaultLoc:[34.175978,-118.849112],
+            // defaultLoc:[34.175978,-118.849112], // Thousand Oaks Museum
+            // defaultLoc:[39.999696,-105.090894], // the Collective, CO
+            defaultLoc:[41.887349,-87.677997], // Branger_Briz, Chicago
             t:0,
             tiles:[
                 'http://a.tile.stamen.com/toner/{z}/{x}/{y}.png',
@@ -18,16 +12,12 @@ const mapapp = new Vue({
             ],
             tileLayer:null,
             nets:[] // networks to be visualized (based on probes)
-        },
-        stations:{},
-        orderedDevices:[]
-    },
+        }
+    }},
     mounted:function(){
-        // calls init() to load all previous data from CSV on server
-        socket.emit('get-init-data')
-
         // create the map
-        this.map = L.map('map').setView(this.mapData.defaultLoc, 13)
+        this.map = L.map('map-inside-this-template')
+            .setView(this.mapData.defaultLoc, 13)
 
         // this will trigger setView() once ipinfo is returned
         // leaving this commented out for Thousand Oaks Museum
@@ -39,50 +29,41 @@ const mapapp = new Vue({
         ).addTo(this.map)
 
         // for Thousand Oaks Museum marker
-        L.marker([34.175978,-118.849112]).addTo(this.map)
-            .bindPopup('California Museum of Art Thousand Oaks').openPopup()
+        // L.marker([34.175978,-118.849112]).addTo(this.map)
+            // .bindPopup('California Museum of Art Thousand Oaks').openPopup()
+    },
+    computed:{
+        css:function(){
+            return {
+                'position':'fixed',
+                'top':'0px;','left':'0px',
+                'width':'100%','height':'100%',
+            }
+        }
     },
     methods:{
-        init:function(data){
-            data.forEach((dev)=>this.add(dev))
-        },
-        add:function(n){
-            if( this.stations.hasOwnProperty(n.mac) )
-                this.stations[n.mac] = Object.assign(this.stations[n.mac],n)
-            else
-                this.stations[n.mac] = Object.assign({},n)
-            // create ordered && filtered Array
-            this.orderedDevices = Object.keys(this.stations)
-                            .map((mac)=>this.stations[mac])
-                            .filter(dev=>dev.probes.length>0)
-                            .sort((a,b)=>b.probes.length-a.probes.length)
+        updateNetList:function(nets){
+            this.mapData.nets = nets
         },
         switchMap:function(){
             this.mapData.t++
             if( this.mapData.t >= this.mapData.tiles.length ) this.mapData.t=0
             this.mapData.tileLayer.setUrl(this.mapData.tiles[this.mapData.t])
         },
-        getCurGPS:function(){
-            console.log('ran getCurGPS')
-            socket.emit('get-ipinfo')
-        },
         setView:function(gps){
-            let loc = JSON.parse(gps).loc.split(',')
-            console.log(loc)
-            if(this.map) this.map.setView([loc[0],loc[1]])
-            else setTimeout(()=>{this.setView(gps)},1000)
+            if(typeof gps=='string'){
+                let loc = JSON.parse(gps).loc.split(',')
+                if(this.map) this.map.setView([loc[0],loc[1]])
+                else setTimeout(()=>{this.setView(gps)},1000)
+            } else if( gps instanceof Array) {
+                this.map.setView(gps)
+            } else {
+                this.map.setView([gps.lan,gps.lon])
+            }
         },
-        showDataFor:function(mac){
-            console.log(this.stations[mac].probes)
-            this.mapData.nets = this.stations[mac].probes
-            socket.emit('get-wigle-data',this.stations[mac])
-        },
-        // ---------------------[ markers ]-------------------------------------
-        // -------------------- DRAW  LOGIC ------------------------------------
-        // ---------------------[ markers ]-------------------------------------
         drawDots:function(d,clrMap){
             let opac = (d.rank>=100) ? 0.25 : 1-(d.rank/125)
-            console.log(d.ssid,d.rank,opac)
+            console.log('dot',d.ssid,d.rank,opac)
             let clr = `hsl(${clrMap[d.ssid]}, 75%,50%)`
             let date = new Date(d.date).toDateString()
             let str = `<b>${d.ssid}</b><br><i>spotted on ${date}</i>`
@@ -103,7 +84,8 @@ const mapapp = new Vue({
             return polyline
         },
         drawData:function(device,data){
-            console.log(data)
+            // console.log(data)
+
             // clear previous markers
             this.map.eachLayer((layer)=>{
                 if(layer.options.color) this.map.removeLayer(layer)
@@ -140,8 +122,6 @@ const mapapp = new Vue({
                 data.forEach(d=>this.drawDots(d,clrMap))
 
                 // re-center map
-                console.log('clist',clist)
-                console.log('uni',uni)
                 if( clist.length <= 1 ){ // re-center to most unique network
                     this.map.setView([uni.lat,uni.lon])
                 } else if( clist.length == 2 ){ // re-center between 2 points
@@ -149,6 +129,8 @@ const mapapp = new Vue({
                 } else if( clist.length > 2) {// draw zone w/turf && re-center
                     this.map.fitBounds(polyline.getBounds())
                 }
+                // console.log('clist',clist)
+                // console.log('uni',uni)
 
             } else {
                 // alert('no wigle data')
@@ -156,5 +138,6 @@ const mapapp = new Vue({
                 this.$forceUpdate()
             }
         }
-    }
+    },
+    template:`<div id="map-inside-this-template" :style="css"></div>`
 })
