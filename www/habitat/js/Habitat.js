@@ -26,7 +26,6 @@
     ----------------------------
     TODO
     ----------------------------
-    * networks/flowers
     * associated stations/butterfly logic
     * better habitat/world environment design
     * figure out new info/target/data/hud
@@ -56,7 +55,8 @@ class Habitat {
     lerp(norm, min, max){ return (max - min) * norm + min }
 
     map(value, sourceMin, sourceMax, destMin, destMax){
-        return this.lerp(this.norm(value, sourceMin, sourceMax), destMin, destMax)
+        return this.lerp(
+            this.norm(value, sourceMin, sourceMax), destMin, destMax)
     }
 
     ran(min,max,floor){
@@ -66,7 +66,6 @@ class Habitat {
     }
 
     createTestButterflies( num ){
-        let self = this
         function genMAC(){
             var hexDigits = "0123456789ABCDEF"
             var macAddress = ""
@@ -94,6 +93,7 @@ class Habitat {
     }
 
     addButterfly(dev){
+        let self = this
         let ranMask = `images/mask${this.ran(0,4,true)}.jpg`
         // let material = new THREE.MeshLambertMaterial({
         let material = new THREE.MeshBasicMaterial({
@@ -140,9 +140,51 @@ class Habitat {
             this.geometry.vertices[ 5 ].z =
                 this.geometry.vertices[ 4 ].z = 6 * Math.cos( this.phase )
         }
+        b.mesh.flap = function(){
+            this.geometry.verticesNeedUpdate = true
+            this.phase = Date.now()*0.0015
+            // this.position.x += Math.sin(this.phase)*10
+            this.geometry.vertices[ 0 ].y = this.geometry.vertices[ 1 ].y =
+                self.map(6 * Math.cos( this.phase ), -6,6, 1,6)
+            this.geometry.vertices[ 5 ].y = this.geometry.vertices[ 4 ].y =
+                self.map(6 * Math.sin( this.phase ), -6,6, 1,6)
+            this.geometry.vertices[ 0 ].z = this.geometry.vertices[ 1 ].z =
+                self.map(6 * Math.sin( this.phase ), -6,6, 1,6)
+            this.geometry.vertices[ 5 ].z = this.geometry.vertices[ 4 ].z =
+                self.map(6 * Math.cos( this.phase ), -6,6, 1,6)
+        }
         // add mesh to scene && butterfly object to array
         this.scene.add( b.mesh )
         this.butterflies.push( b )
+    }
+
+    placeButterflyOnFlower(b,f){
+        // TODO
+        let pos = Object.assign({},f.position)
+        // console.log(pos)
+        let y = pos.y
+        let dy = this.ran(75,90)
+        pos.y += dy
+        let radius = this.map((y+dy),(y+75),(y+90),25,20)
+        let theta = f.rotation.y
+        pos.z = Math.sin(theta)*radius
+        pos.x = Math.cos(theta)*radius
+        b.mesh.position.copy( pos )
+    }
+
+    updateAssoButterfly(devMac,netMac){
+        let idx = this.butterflies.map(b=>b.mac).indexOf(devMac)
+        if( idx >= 0 ){
+            for (let i = 0; i < this.flowers.length; i++) {
+                if( this.flowers[i].name == netMac &&
+                    typeof this.butterflies[idx].net=="undefined"){
+                    this.butterflies[idx].net = netMac
+                    this.placeButterflyOnFlower(
+                        this.butterflies[idx],this.flowers[i])
+                    break
+                }
+            }
+        }
     }
 
     addFlower(dev){
@@ -166,7 +208,6 @@ class Habitat {
 		// y
 		pos[1] = -this.worldSize[1]/2 - this.elevation
 
-
 		// z
 		const nearZ = this.worldSize[2] * 5.5
 		const farZ  = -this.worldSize[2] * 0.25
@@ -188,6 +229,7 @@ class Habitat {
                 flower.geometry.scale(50,50,50)
                 flower.position.set(...pos)
                 flower.rotation.y = this.ran(-1,1)
+                flower.name = dev.mac
 
             // assign groups with  corresponding  materialIndex
             let group = 0
@@ -213,8 +255,9 @@ class Habitat {
                         group++
                     })
                 }
-                // NOTE limit flowers for testing NOTE
-                if(this.flowers.length < 10){
+
+                // if(this.flowers.length < 20){
+                //NOTE: limiting flower amount for testing
                     flower.scale.y = 0
                     this.scene.add( flower )
                     this.flowers.push( flower )
@@ -222,7 +265,7 @@ class Habitat {
                         .to({ x:1, y:1, z:1 }, 500)
                         .easing(TWEEN.Easing.Sinusoidal.Out)
                         .start()
-                }
+                // }
             }/*,onProgress,onError*/) // for debug
 
             // morph...
@@ -348,8 +391,12 @@ class Habitat {
 
         // update butterflies
         this.butterflies.forEach((butterfly)=>{
-            butterfly.boid.run( this.butterflies.map((b)=>b.boid) )
-            butterfly.mesh.update( butterfly.boid )
+            if( butterfly.net ){
+                butterfly.mesh.flap()
+            } else {
+                butterfly.boid.run( this.butterflies.map((b)=>b.boid) )
+                butterfly.mesh.update( butterfly.boid )
+            }
         })
 
         // update any flowers that need to spring up
