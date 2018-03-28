@@ -159,13 +159,21 @@ class Habitat {
 
         let sec = (dev.privacy=="OPN") ? 3 : 2
 
-        let pos = [
-            this.map(parseInt(dev.mac.split(':')[5],16),
-                0, 255, -this.worldSize[0]/2, this.worldSize[0]/2),
-            -this.worldSize[1]/2 - this.elevation,
-            this.map(dev.power,
-                0,-100,this.worldSize[2]/5.5,-this.worldSize[2]/2)
-        ]
+        let pos = []
+		// x
+		pos[0] = this.map(parseInt(dev.mac.split(':')[5],16),
+                0, 255, -this.worldSize[0] * 0.25, this.worldSize[0] * 0.25)
+		// y
+		pos[1] = -this.worldSize[1]/2 - this.elevation
+
+
+		// z
+		const nearZ = this.worldSize[2] * 5.5
+		const farZ  = -this.worldSize[2] * 0.25
+		const zOffset = -2000
+		pos[2] = this.map(dev.power, -30, -100,  nearZ + zOffset, farZ + zOffset)
+		console.log(dev.power)
+		console.log(`power: ${dev.power} z: ${pos[2]}`)
 
         let buffloader = new THREE.BufferGeometryLoader()
         buffloader.load('js/sunflower.json',(geometry)=>{
