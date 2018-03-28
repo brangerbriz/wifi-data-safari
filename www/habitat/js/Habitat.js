@@ -142,7 +142,7 @@ class Habitat {
         }
         b.mesh.flap = function(){
             this.geometry.verticesNeedUpdate = true
-            this.phase = Date.now()*0.0015
+			this.phase=(this.phase + 0.3) % 62.83
             // this.position.x += Math.sin(this.phase)*10
             this.geometry.vertices[ 0 ].y = this.geometry.vertices[ 1 ].y =
                 self.map(6 * Math.cos( this.phase ), -6,6, 1,6)
@@ -153,6 +153,17 @@ class Habitat {
             this.geometry.vertices[ 5 ].z = this.geometry.vertices[ 4 ].z =
                 self.map(6 * Math.cos( this.phase ), -6,6, 1,6)
         }
+
+		b.mesh.flutter = function() {
+			if (!this.flutterPhase) {
+				this.flutterPhase = Math.random() * 0.003 + 0.003
+			}
+			this.geometry.verticesNeedUpdate = true
+			this.position.y += Math.sin(Date.now() * this.flutterPhase) * 0.5
+			// this.position.y += noise.perlin2(this.noiseDelta, 0) * 0.25
+			this.position.x += Math.sin(Date.now() * this.flutterPhase) * 0.1
+
+		}
         // add mesh to scene && butterfly object to array
         this.scene.add( b.mesh )
         this.butterflies.push( b )
@@ -161,19 +172,20 @@ class Habitat {
     placeButterflyOnFlower(b,f){
         // TODO
         let pos = Object.assign({},f.position)
-        // console.log(pos)
-        let y = pos.y
-        let dy = this.ran(75,90)
-        pos.y += dy
-        let radius = this.map((y+dy),(y+75),(y+90),25,20)
-        let theta = f.rotation.y
-        pos.z = Math.sin(theta)*radius
-        pos.x = Math.cos(theta)*radius
-        b.mesh.position.copy( pos )
+        console.log(pos)
+
+		pos.x += this.ran(-25, 25)
+		pos.y += this.ran(70, 100)
+		pos.z += this.ran(20, 30)
+
+		b.mesh.geometry.scale(2, 2, 2)
+        b.mesh.position.copy(pos)
+		b.mesh.geometry.rotateX(Math.random() * Math.PI)
+
     }
 
     updateAssoButterfly(devMac,netMac){
-        let idx = this.butterflies.map(b=>b.mac).indexOf(devMac)
+		let idx = this.butterflies.map(b=>b.mac).indexOf(devMac)
         if( idx >= 0 ){
             for (let i = 0; i < this.flowers.length; i++) {
                 if( this.flowers[i].name == netMac &&
@@ -203,18 +215,20 @@ class Habitat {
 
         let pos = []
 		// x
-		pos[0] = this.map(parseInt(dev.mac.split(':')[5],16),
-                0, 255, -this.worldSize[0] * 0.25, this.worldSize[0] * 0.25)
+		// pos[0] = this.map(parseInt(dev.mac.split(':')[5],16),
+        //         0, 255, -this.worldSize[0] * 0.25, this.worldSize[0] * 0.25)
+		pos[0] = this.ran(-this.worldSize[0] * 0.3, this.worldSize[0] * 0.3)
+
 		// y
-		pos[1] = -this.worldSize[1]/2 - this.elevation
+		pos[1] = -this.worldSize[1] / 2 - this.elevation - this.ran(0, 8)
 
 		// z
 		const nearZ = this.worldSize[2] * 5.5
 		const farZ  = -this.worldSize[2] * 0.25
 		const zOffset = -2000
 		pos[2] = this.map(dev.power, -30, -100,  nearZ + zOffset, farZ + zOffset)
-		console.log(dev.power)
-		console.log(`power: ${dev.power} z: ${pos[2]}`)
+		// console.log(dev.power)
+		// console.log(`power: ${dev.power} z: ${pos[2]}`)
 
         let buffloader = new THREE.BufferGeometryLoader()
         buffloader.load('js/sunflower.json',(geometry)=>{
@@ -392,7 +406,10 @@ class Habitat {
         // update butterflies
         this.butterflies.forEach((butterfly)=>{
             if( butterfly.net ){
+				// be sure to flap before flutter so that phase is
+				// updated correctly
                 butterfly.mesh.flap()
+				butterfly.mesh.flutter()
             } else {
                 butterfly.boid.run( this.butterflies.map((b)=>b.boid) )
                 butterfly.mesh.update( butterfly.boid )
