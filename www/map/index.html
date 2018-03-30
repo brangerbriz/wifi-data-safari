@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title> WiFi Data Safari - Map</title>
+        <meta charset="utf-8">
+        <link rel="stylesheet" href="css/styles.css">
+        <link rel="stylesheet" href="css/leaflet.css" />
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <link rel="apple-touch-icon" href="images/icon.png" />
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="white">
+
+        <meta name="msapplication-TileColor" content="#ffffff">
+        <meta name="msapplication-TileImage" content="images/icon.png">
+        <meta name="theme-color" content="#ffffff">
+    </head>
+    <body>
+
+        <div id="mapapp">
+            <map-frame ref="map"></map-frame>
+            <div id="devices">
+                <div class="map-header">
+                    <span>{{orderedDevices.length}} devices</span>
+                    <span class="map-button" v-on:click="getCurGPS()">⊕</span>
+                    <span class="map-button" v-on:click="switchMap()">❖</span>
+                </div>
+                <hr>
+                <div
+                    v-for="d in orderedDevices"
+                    v-bind:key="d.mac"
+                    v-on:click="showDataFor(d.mac)"
+                    v-bind:class="{strike:d.nodata, strikeR:d.toomany}">
+                    {{ d.mac }} | {{ d.probes.length }}
+                    SSID<span v-if="d.probes.length>1">s</span>
+                    <span v-if="d.randomMac" class="ranmac">[random MAC]</span>
+                </div>
+            </div>
+        </div>
+
+        <script src="js/vue.js"></script>
+        <!-- <script src="js/vue.min.js"></script> -->
+        <script src="/socket.io/socket.io.js"></script>
+        <script src="js/leaflet.js"></script>
+        <script src="js/turf.min.js"></script>
+        <script src="js/map-frame.js"></script>
+        <script>
+            const socket = io(`http://${window.location.host}`)
+            socket.on('init-data',d=>mapapp.init(d))
+            socket.on('ipinfo',gps=>mapapp.$refs.map.setView(gps))
+            socket.on('wigle-data',w=>mapapp.drawWigleData(w))
+            socket.on('stations',(ss)=>{ ss.forEach((s)=>mapapp.add(s)) })
+
+            // the Collective, CO
+            const initGPS = [39.999696,-105.090894]
+
+            const mapapp = new Vue({
+                el: '#mapapp',
+                data:{
+                    stations:{},
+                    orderedDevices:[]
+                },
+                mounted:function(){
+                    // calls init() via on('init-data')
+                    // to load all previous data from CSV on server
+                    socket.emit('get-init-data')
+                },
+                methods:{
+                    init:function(data){
+                        this.$refs.map.setView(initGPS)
+                        data.forEach((dev)=>this.add(dev))
+                    },
+                    add:function(n){
+                        if( this.stations.hasOwnProperty(n.mac) )
+                            this.stations[n.mac] = Object.assign(this.stations[n.mac],n)
+                        else
+                            this.stations[n.mac] = Object.assign({},n)
+                        // create ordered && filtered Array
+                        this.orderedDevices = Object.keys(this.stations)
+                            .map((mac)=>this.stations[mac])
+                            .filter(dev=>dev.probes.length>0)
+                            .sort((a,b)=>b.probes.length-a.probes.length)
+                    },
+                    getCurGPS:function(){
+                        console.log('ran getCurGPS')
+                        socket.emit('get-ipinfo')
+                    },
+                    switchMap(){
+                        this.$refs.map.switchMap()
+                    },
+                    showDataFor:function(mac){
+                        console.log('probed networks',this.stations[mac].probes)
+                        this.$refs.map.updateNetList(this.stations[mac].probes)
+                        socket.emit('get-wigle-data',this.stations[mac])
+                    },
+                    drawWigleData:function(w){
+                        if( w.data.length > 0 ){
+                            // remove nets that have too many locations
+                            let filteredData = w.data.filter(d=>d.rank < 100)
+                            // draw data only if there's any left to draw
+                            if( filteredData.length > 0 )
+                                this.$refs.map.drawData(w.device,filteredData)
+                            else this.stations[w.device].toomany = true
+                        } else {
+                            this.stations[w.device].nodata = true
+                            this.$forceUpdate()
+                        }
+                    }
+                }
+            })
+        </script>
+    </body>
+</html>
