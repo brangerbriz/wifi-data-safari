@@ -4,7 +4,7 @@ socket.on('stations',(ss)=>{ss.forEach((s)=>app.addDevice(s))})
 // socket.on('dns-request',(d)=>{console.log(d)})
 
 const habitat = new Habitat({
-    debug:true,
+    debug: false,
     // test:500,
     fog: false,
     bgColor:'#c4e7f2',
