@@ -1,7 +1,7 @@
 const socket = io(`http://${window.location.host}`)
 socket.on('networks',(ns)=>{ns.forEach((n)=>app.addDevice(n))})
 socket.on('stations',(ss)=>{ss.forEach((s)=>app.addDevice(s))})
-// socket.on('dns-request',(domain)=>{habitat.addCloud(domain)})
+socket.on('dns-request',(domain)=>{habitat.addCloud(domain)})
 
 const habitat = new Habitat({
     debug: false,
