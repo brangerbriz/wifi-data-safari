@@ -313,7 +313,8 @@ class Habitat {
 		var loader = new THREE.OBJLoader(manager)
 		loader.load(`js/Clouds_Separated/Cloud${this.ran(1, 4, true)}.obj`, cloud => {
 
-			cloud.name = dnsRecord
+			cloud.name = dnsRecord.domain
+			cloud.blocked = dnsRecord.blocked
 
             const scale = this.ran(25, 50, true)
             cloud.scale.x = scale
