@@ -1,4 +1,8 @@
 Vue.component('map-frame', {
+    props:{
+        DataZoom:{type:String,default:'true'},
+        DataCred:{type:String,default:'true'}
+    },
     data:function(){return {
         map:null,
         mapData:{
@@ -16,17 +20,19 @@ Vue.component('map-frame', {
     }},
     mounted:function(){
         // create the map
-        this.map = L.map('map-inside-this-template')
-            .setView(this.mapData.defaultLoc, 13)
+        this.map = L.map('map-inside-this-template',{
+            zoomControl:(this.DataZoom=='true')
+        }).setView(this.mapData.defaultLoc, 13)
 
         // this will trigger setView() once ipinfo is returned
         // leaving this commented out for Thousand Oaks Museum
         // socket.emit('get-ipinfo')
 
         this.mapData.tileLayer = L.tileLayer(
-            this.mapData.tiles[this.mapData.t],
-            { attribution:'&copy; OpenStreetMap contributors' }
-        ).addTo(this.map)
+            this.mapData.tiles[this.mapData.t],{
+            attribution:(this.DataCred=='true') ?
+                '&copy; OpenStreetMap contributors' : '' 
+        }).addTo(this.map)
 
         // for Thousand Oaks Museum marker
         // L.marker([34.175978,-118.849112]).addTo(this.map)
