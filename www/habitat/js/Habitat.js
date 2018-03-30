@@ -173,7 +173,6 @@ class Habitat {
     placeButterflyOnFlower(b,f){
         // TODO
         let pos = Object.assign({},f.position)
-        console.log(pos)
 
 		pos.x += this.ran(-25, 25)
 		pos.y += this.ran(70, 100)
@@ -293,6 +292,83 @@ class Habitat {
         }/*,onProgress,onError*/) // for debug
     }
 
+    addCloud(dnsRecord) {
+
+        const manager = new THREE.LoadingManager()
+		manager.onProgress = function (item, loaded, total) {
+			console.log(item, loaded, total)
+		}
+
+		var onProgress = function (xhr) {
+			if ( xhr.lengthComputable ) {
+				var percentComplete = xhr.loaded / xhr.total * 100;
+				console.log( Math.round(percentComplete, 2) + '% downloaded' )
+			}
+		}
+
+		var onError = function (xhr) {
+            console.log(xhr)
+		}
+
+		var loader = new THREE.OBJLoader(manager)
+		loader.load(`js/Clouds_Separated/Cloud${this.ran(1, 4, true)}.obj`, cloud => {
+
+			cloud.name = dnsRecord
+
+            const scale = this.ran(25, 50, true)
+            cloud.scale.x = scale
+            cloud.scale.y = scale
+            cloud.scale.z = scale
+
+			cloud.position.y = this.ran(0, 600)
+            cloud.position.z = this.ran(0, -700)
+            cloud.position.x = -1100
+
+            const material = new THREE.MeshPhongMaterial({
+                color: '#ffffff',
+                emissive: '#555555',
+                shininess: 0,
+                flatShading: true,
+				opacity: 0.5,
+				transparent: true
+            })
+
+            cloud.traverse(child => {
+				if (child instanceof THREE.Mesh) {
+					child.material = material
+				}
+			})
+
+            this.clouds.push(cloud)
+
+            const speed = this.ran(50, 100, true) * 1000
+            new TWEEN.Tween(cloud.position)
+                .to({ x:1100, y:cloud.position.y, z:cloud.position.z }, speed)
+				.easing(TWEEN.Easing.Linear.None) // Use an easing function to make the animation smooth.
+				.onComplete(() => {
+					this.scene.remove(cloud)
+					// remove the cloud from the clouds array
+					for(let i = this.clouds.length - 1; i >= 0 ; i--){
+						if(this.clouds[i].uuid == cloud.uuid){
+							this.clouds.splice(i, 1)
+						}
+					}
+				})
+                .start()
+				// tween scale over time to +/- 100% in each direction
+				new TWEEN.Tween(cloud.scale)
+	                .to({ x:cloud.scale.x * Math.random() * 2,
+						  y:cloud.scale.y * Math.random() * 2,
+						  z:cloud.scale.z * Math.random() * 2 }, speed)
+					.easing(TWEEN.Easing.Linear.None) // Use an easing function to make the animation smooth.
+	                .start()
+
+            this.scene.add(cloud)
+
+		}, onProgress, onError )
+
+    }
+
     createGnd(){
         this.gndMesh = new THREE.Mesh(
             new THREE.PlaneGeometry( 4000, 4000, 100, 100 ),
@@ -343,7 +419,7 @@ class Habitat {
     setupScene(){
 
         for (let i = 0; i < 10; i++) {
-            setTimeout(() => this.addCloud(), this.ran(0, 5000))
+            setTimeout(() => this.addCloud(Math.random()), this.ran(0, 5000))
         }
 
         // camera
@@ -397,6 +473,8 @@ class Habitat {
         window.addEventListener( 'resize', ()=>{
             this.winResize()
         }, false )
+
+		this.winResize()
     }
 
     drawScene(){
@@ -426,76 +504,5 @@ class Habitat {
         TWEEN.update()
 
         this.renderer.render( this.scene, this.camera )
-    }
-
-    removeDeadClouds() {
-        for(let i = elements.length - 1; i >= 0 ; i--){
-            if(elements[i] == 5){
-                elements.splice(i, 1);
-            }
-        }
-    }
-
-    addCloud(dnsRecord) {
-
-        const manager = new THREE.LoadingManager()
-		manager.onProgress = function (item, loaded, total) {
-			console.log(item, loaded, total)
-		}
-
-		var onProgress = function (xhr) {
-			if ( xhr.lengthComputable ) {
-				var percentComplete = xhr.loaded / xhr.total * 100;
-				console.log( Math.round(percentComplete, 2) + '% downloaded' )
-			}
-		}
-
-		var onError = function (xhr) {
-            console.log(xhr)
-		}
-
-		var loader = new THREE.OBJLoader(manager)
-
-		loader.load(`js/Clouds_Separated/Cloud${this.ran(1, 4, true)}.obj`, cloud => {
-
-            const scale = this.ran(25, 50, true)
-            cloud.scale.x = scale
-            cloud.scale.y = scale
-            cloud.scale.z = scale
-
-			cloud.position.y = this.ran(0, 600)
-            cloud.position.z = this.ran(0, -700)
-            cloud.position.x = -800
-
-            const material = new THREE.MeshPhongMaterial({
-                color: '#ffffff',
-                emissive: '#555555',
-                shininess: 0,
-                flatShading: true
-            })
-
-            cloud.traverse(child => {
-                console.log(child.name)
-				if (child instanceof THREE.Mesh) {
-					child.material = material
-				}
-			})
-
-            this.clouds.push(cloud)
-
-            const speed = this.ran(50, 100, true) * 1000
-            new TWEEN.Tween(cloud.position)
-                .to({ x:800, y:cloud.position.y, z:cloud.position.z }, speed)
-                .start()
-                // .call(() => {
-                //     this.scene.remove(cloud.name)
-                //     cloud.isDead = true
-                // })
-
-            cloud.name = dnsRecord
-            this.scene.add(cloud)
-
-		}, onProgress, onError )
-
     }
 }

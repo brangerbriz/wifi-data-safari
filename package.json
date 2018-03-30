@@ -5,7 +5,8 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "start": "node server.js",
+    "electron": "electron electron.js"
   },
   "repository": {
     "type": "git",
@@ -26,5 +27,8 @@
     "mac-lookup": "^0.1.7",
     "socket.io": "^2.0.4",
     "underscore": "^1.8.3"
+  },
+  "devDependencies": {
+    "electron": "^1.8.4"
   }
 }
