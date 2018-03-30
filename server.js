@@ -3,6 +3,7 @@ const { ArgumentParser } = require('argparse')
 const fs = require('fs')
 const isRoot = require('is-root')
 const { AirodumpParser } = require('./src/AirodumpParser')
+const { DNSParser } = require('./src/DNSParser')
 const { updateVendorMacs, getNetInterfaces } = require('./src/utils')
 const express = require('express')
 var commandExistsSync = require('command-exists').sync
@@ -12,7 +13,10 @@ const server = require('http').Server(app)
 const io = require('socket.io')(server)
 
 const airodumpParser = new AirodumpParser()
+const dnsParser      = new DNSParser()
+
 let airodumpProc = null
+let tcpdumpProc = null
 let iface = null
 let airodumpCSVfile
 
@@ -38,6 +42,16 @@ function main() {
 	}
 
 	const args = parseArguments()
+
+	// don't play w/ that [] bs
+	args.dns = !!args.dns
+	args['update_vendor_macs'] = !!args['update_vendor_macs']
+
+	if (args.dns && !commandExistsSync('tcpdump')) {
+		console.error('[error] --dns flag is present but tcpdump is not installed. Please install tcpdump to use the --dns flag.')
+		process.exit(1)
+	}
+
 	if (args['update_vendor_macs']) updateVendorMacs()
 	else {
 		if (!args.iface) {
@@ -78,6 +92,10 @@ function launch(args) {
 		iface = args.iface
 		// lets get our listen on!
 		spawnAirodump(iface)
+	}
+
+	if (args.dns) {
+		spawnTcpdump(iface)
 	}
 
 	app.use(express.static('www'))
@@ -154,6 +172,22 @@ function launch(args) {
 		airodumpParser.on('stations', (stations) => {
 			socket.emit('stations', stations)
 		})
+
+		dnsParser.on('dns-request', domain => {
+			socket.emit('dns-request', domain)
+		})
+	})
+
+	airodumpParser.on('networks', (networks) => {
+		console.log(`[verbose] ${networks.length} networks`)
+	})
+
+	airodumpParser.on('stations', (stations) => {
+		console.log(`[verbose] ${stations.length} stations`)
+	})
+
+	dnsParser.on('dns-request', domain => {
+		console.log(`[verbose] DNS request: ${domain}`)
 	})
 
 	console.log(`[info] HTTP server started on port ${args.port}`)
@@ -167,6 +201,11 @@ function cleanup(args) {
 	if (airodumpProc) {
 		airodumpProc.kill()
 		console.log('[info] airodump-ng process exited')
+	}
+
+	if (tcpdumpProc) {
+		tcpdumpProc.kill()
+		console.log('[info] tcpdump process exited')
 	}
 
 	// if the interface was create with airmon-ng
@@ -211,6 +250,26 @@ function spawnAirodump(iface) {
 	}, 1000)
 }
 
+function spawnTcpdump(iface) {
+
+	console.log(`[verbose] spawinging tcpdump with ${iface}`)
+	// will only show DNS traffic on iface. This is fine if you are serving a
+	// wifi network from this device, but if not you will probably be
+	// sad to see no traffic. Change iface to "any" string to listen for DNS
+	// requests on all interfaces
+	tcpdumpProc = spawn('tcpdump', ['udp', 'port', '53', '-i', 'any', '-l'])
+
+	tcpdumpProc.stdout.on('data', data => {
+		// parse tcpdump output. If a dns request is found, this will fire
+		// dnsParser's 'dns-request' event
+		dnsParser.parse(data.toString())
+	})
+
+	tcpdumpProc.on('close', code => {
+		console.log(`[warning] tcpdump child process exited with exit code ${code}`)
+	})
+}
+
 function parseArguments() {
 	const parser = new ArgumentParser({
   		version: '1.0.0',
@@ -226,6 +285,11 @@ function parseArguments() {
 		help: 'The HTTP port to serve the browser interface on (default: 1337)',
 		defaultValue: 1337,
 		type: 'int'
+	})
+
+	parser.addArgument(['-d', '--dns'], {
+		help: 'Use tcpdump to monitor DNS traffic on --iface and broadcast records to connected clients via websockets.',
+		nargs: 0
 	})
 
 	parser.addArgument(['-u', '--update-vendor-macs'], {

@@ -1,9 +1,10 @@
 const socket = io(`http://${window.location.host}`)
 socket.on('networks',(ns)=>{ns.forEach((n)=>app.addDevice(n))})
 socket.on('stations',(ss)=>{ss.forEach((s)=>app.addDevice(s))})
+socket.on('dns-request',(domain)=>{habitat.addCloud(domain)})
 
 const habitat = new Habitat({
-    debug:false,
+    debug: false,
     // test:500,
     fog: true,
     bgColor:'#c4e7f2',
@@ -38,6 +39,12 @@ const app = new Vue({
                     // ie. only networks w/devices associated?
                     if(dev.ssid!=="") habitat.addFlower( dev )
                 }
+            }
+
+            // let habitat know about associated stations
+            for(let mac in this.stations){
+                if(typeof this.stations[mac].network=="string")
+                    habitat.updateAssoButterfly(mac,this.stations[mac].network)
             }
         }
     }

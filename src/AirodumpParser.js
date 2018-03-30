@@ -179,7 +179,6 @@ class AirodumpParser extends EventEmitter {
 		})
 
 		if (nets.length > 0) {
-			console.log(`Emitting ${nets.length} networks`)
 			this.emit('networks', nets)
 		}
 	}
@@ -196,7 +195,6 @@ class AirodumpParser extends EventEmitter {
 		})
 
 		if (stats.length > 0) {
-			console.log(`Emitting ${stats.length} stations`)
 			this.emit('stations', stats)
 		}
 	}

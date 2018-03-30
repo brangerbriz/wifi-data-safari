@@ -26,7 +26,6 @@
     ----------------------------
     TODO
     ----------------------------
-    * networks/flowers
     * associated stations/butterfly logic
     * better habitat/world environment design
     * figure out new info/target/data/hud
@@ -43,6 +42,7 @@ class Habitat {
         this.gndHeights = []
         this.butterflies = []
         this.flowers = []
+        this.clouds = []
         // options
         this.bgColor = (c && c.bgColor) ? c.bgColor : 0xffffff
         this.fog = (c && c.fog) ? c.fog : false
@@ -56,7 +56,8 @@ class Habitat {
     lerp(norm, min, max){ return (max - min) * norm + min }
 
     map(value, sourceMin, sourceMax, destMin, destMax){
-        return this.lerp(this.norm(value, sourceMin, sourceMax), destMin, destMax)
+        return this.lerp(
+            this.norm(value, sourceMin, sourceMax), destMin, destMax)
     }
 
     ran(min,max,floor){
@@ -66,7 +67,6 @@ class Habitat {
     }
 
     createTestButterflies( num ){
-        let self = this
         function genMAC(){
             var hexDigits = "0123456789ABCDEF"
             var macAddress = ""
@@ -94,6 +94,7 @@ class Habitat {
     }
 
     addButterfly(dev){
+        let self = this
         let ranMask = `images/mask${this.ran(0,4,true)}.jpg`
         // let material = new THREE.MeshLambertMaterial({
         let material = new THREE.MeshBasicMaterial({
@@ -140,9 +141,62 @@ class Habitat {
             this.geometry.vertices[ 5 ].z =
                 this.geometry.vertices[ 4 ].z = 6 * Math.cos( this.phase )
         }
+        b.mesh.flap = function(){
+            this.geometry.verticesNeedUpdate = true
+			this.phase=(this.phase + 0.3) % 62.83
+            // this.position.x += Math.sin(this.phase)*10
+            this.geometry.vertices[ 0 ].y = this.geometry.vertices[ 1 ].y =
+                self.map(6 * Math.cos( this.phase ), -6,6, 1,6)
+            this.geometry.vertices[ 5 ].y = this.geometry.vertices[ 4 ].y =
+                self.map(6 * Math.sin( this.phase ), -6,6, 1,6)
+            this.geometry.vertices[ 0 ].z = this.geometry.vertices[ 1 ].z =
+                self.map(6 * Math.sin( this.phase ), -6,6, 1,6)
+            this.geometry.vertices[ 5 ].z = this.geometry.vertices[ 4 ].z =
+                self.map(6 * Math.cos( this.phase ), -6,6, 1,6)
+        }
+
+		b.mesh.flutter = function() {
+			if (!this.flutterPhase) {
+				this.flutterPhase = Math.random() * 0.003 + 0.003
+			}
+			this.geometry.verticesNeedUpdate = true
+			this.position.y += Math.sin(Date.now() * this.flutterPhase) * 0.5
+			// this.position.y += noise.perlin2(this.noiseDelta, 0) * 0.25
+			this.position.x += Math.sin(Date.now() * this.flutterPhase) * 0.1
+
+		}
         // add mesh to scene && butterfly object to array
         this.scene.add( b.mesh )
         this.butterflies.push( b )
+    }
+
+    placeButterflyOnFlower(b,f){
+        // TODO
+        let pos = Object.assign({},f.position)
+
+		pos.x += this.ran(-25, 25)
+		pos.y += this.ran(70, 100)
+		pos.z += this.ran(20, 30)
+
+		b.mesh.geometry.scale(2, 2, 2)
+        b.mesh.position.copy(pos)
+		b.mesh.geometry.rotateX(Math.random() * Math.PI)
+
+    }
+
+    updateAssoButterfly(devMac,netMac){
+		let idx = this.butterflies.map(b=>b.mac).indexOf(devMac)
+        if( idx >= 0 ){
+            for (let i = 0; i < this.flowers.length; i++) {
+                if( this.flowers[i].name == netMac &&
+                    typeof this.butterflies[idx].net=="undefined"){
+                    this.butterflies[idx].net = netMac
+                    this.placeButterflyOnFlower(
+                        this.butterflies[idx],this.flowers[i])
+                    break
+                }
+            }
+        }
     }
 
     addFlower(dev){
@@ -159,13 +213,22 @@ class Habitat {
 
         let sec = (dev.privacy=="OPN") ? 3 : 2
 
-        let pos = [
-            this.map(parseInt(dev.mac.split(':')[5],16),
-                0, 255, -this.worldSize[0]/2, this.worldSize[0]/2),
-            -this.worldSize[1]/2 - this.elevation,
-            this.map(dev.power,
-                0,-100,this.worldSize[2]/5.5,-this.worldSize[2]/2)
-        ]
+        let pos = []
+		// x
+		// pos[0] = this.map(parseInt(dev.mac.split(':')[5],16),
+        //         0, 255, -this.worldSize[0] * 0.25, this.worldSize[0] * 0.25)
+		pos[0] = this.ran(-this.worldSize[0] * 0.3, this.worldSize[0] * 0.3)
+
+		// y
+		pos[1] = -this.worldSize[1] / 2 - this.elevation - this.ran(0, 8)
+
+		// z
+		const nearZ = this.worldSize[2] * 5.5
+		const farZ  = -this.worldSize[2] * 0.25
+		const zOffset = -2000
+		pos[2] = this.map(dev.power, -30, -100,  nearZ + zOffset, farZ + zOffset)
+		// console.log(dev.power)
+		// console.log(`power: ${dev.power} z: ${pos[2]}`)
 
         let buffloader = new THREE.BufferGeometryLoader()
         buffloader.load('js/sunflower.json',(geometry)=>{
@@ -180,6 +243,7 @@ class Habitat {
                 flower.geometry.scale(50,50,50)
                 flower.position.set(...pos)
                 flower.rotation.y = this.ran(-1,1)
+                flower.name = dev.mac
 
             // assign groups with  corresponding  materialIndex
             let group = 0
@@ -205,8 +269,9 @@ class Habitat {
                         group++
                     })
                 }
-                // NOTE limit flowers for testing NOTE
-                if(this.flowers.length < 10){
+
+                // if(this.flowers.length < 20){
+                //NOTE: limiting flower amount for testing
                     flower.scale.y = 0
                     this.scene.add( flower )
                     this.flowers.push( flower )
@@ -214,7 +279,7 @@ class Habitat {
                         .to({ x:1, y:1, z:1 }, 500)
                         .easing(TWEEN.Easing.Sinusoidal.Out)
                         .start()
-                }
+                // }
             }/*,onProgress,onError*/) // for debug
 
             // morph...
@@ -225,6 +290,83 @@ class Habitat {
             // }
 
         }/*,onProgress,onError*/) // for debug
+    }
+
+    addCloud(dnsRecord) {
+
+        const manager = new THREE.LoadingManager()
+		manager.onProgress = function (item, loaded, total) {
+			console.log(item, loaded, total)
+		}
+
+		var onProgress = function (xhr) {
+			if ( xhr.lengthComputable ) {
+				var percentComplete = xhr.loaded / xhr.total * 100;
+				console.log( Math.round(percentComplete, 2) + '% downloaded' )
+			}
+		}
+
+		var onError = function (xhr) {
+            console.log(xhr)
+		}
+
+		var loader = new THREE.OBJLoader(manager)
+		loader.load(`js/Clouds_Separated/Cloud${this.ran(1, 4, true)}.obj`, cloud => {
+
+			cloud.name = dnsRecord
+
+            const scale = this.ran(25, 50, true)
+            cloud.scale.x = scale
+            cloud.scale.y = scale
+            cloud.scale.z = scale
+
+			cloud.position.y = this.ran(0, 600)
+            cloud.position.z = this.ran(0, -700)
+            cloud.position.x = -1100
+
+            const material = new THREE.MeshPhongMaterial({
+                color: '#ffffff',
+                emissive: '#555555',
+                shininess: 0,
+                flatShading: true,
+				opacity: 0.5,
+				transparent: true
+            })
+
+            cloud.traverse(child => {
+				if (child instanceof THREE.Mesh) {
+					child.material = material
+				}
+			})
+
+            this.clouds.push(cloud)
+
+            const speed = this.ran(50, 100, true) * 1000
+            new TWEEN.Tween(cloud.position)
+                .to({ x:1100, y:cloud.position.y, z:cloud.position.z }, speed)
+				.easing(TWEEN.Easing.Linear.None) // Use an easing function to make the animation smooth.
+				.onComplete(() => {
+					this.scene.remove(cloud)
+					// remove the cloud from the clouds array
+					for(let i = this.clouds.length - 1; i >= 0 ; i--){
+						if(this.clouds[i].uuid == cloud.uuid){
+							this.clouds.splice(i, 1)
+						}
+					}
+				})
+                .start()
+				// tween scale over time to +/- 100% in each direction
+				new TWEEN.Tween(cloud.scale)
+	                .to({ x:cloud.scale.x * Math.random() * 2,
+						  y:cloud.scale.y * Math.random() * 2,
+						  z:cloud.scale.z * Math.random() * 2 }, speed)
+					.easing(TWEEN.Easing.Linear.None) // Use an easing function to make the animation smooth.
+	                .start()
+
+            this.scene.add(cloud)
+
+		}, onProgress, onError )
+
     }
 
     createGnd(){
@@ -275,6 +417,11 @@ class Habitat {
     }
 
     setupScene(){
+
+        for (let i = 0; i < 10; i++) {
+            setTimeout(() => this.addCloud(Math.random()), this.ran(0, 5000))
+        }
+
         // camera
         this.camera = new THREE.PerspectiveCamera(
             50, innerWidth/innerHeight, 1, 10000 )
@@ -326,6 +473,8 @@ class Habitat {
         window.addEventListener( 'resize', ()=>{
             this.winResize()
         }, false )
+
+		this.winResize()
     }
 
     drawScene(){
@@ -340,8 +489,15 @@ class Habitat {
 
         // update butterflies
         this.butterflies.forEach((butterfly)=>{
-            butterfly.boid.run( this.butterflies.map((b)=>b.boid) )
-            butterfly.mesh.update( butterfly.boid )
+            if( butterfly.net ){
+				// be sure to flap before flutter so that phase is
+				// updated correctly
+                butterfly.mesh.flap()
+				butterfly.mesh.flutter()
+            } else {
+                butterfly.boid.run( this.butterflies.map((b)=>b.boid) )
+                butterfly.mesh.update( butterfly.boid )
+            }
         })
 
         // update any flowers that need to spring up
