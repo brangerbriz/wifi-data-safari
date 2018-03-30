@@ -63,7 +63,7 @@ Vue.component('map-frame', {
         },
         drawDots:function(d,clrMap){
             let opac = (d.rank>=100) ? 0.25 : 1-(d.rank/125)
-            console.log('dot',d.ssid,d.rank,opac)
+            // console.log('dot',d.ssid,d.rank,opac)
             let clr = `hsl(${clrMap[d.ssid]}, 75%,50%)`
             let date = new Date(d.date).toDateString()
             let str = `<b>${d.ssid}</b><br><i>spotted on ${date}</i>`
@@ -119,7 +119,10 @@ Vue.component('map-frame', {
                 if( clist.length > 2 ){ polyline = this.drawZone(clist) }
 
                 // draw dots
-                data.forEach(d=>this.drawDots(d,clrMap))
+                let cap = 100 // don't draw networks if there's more than this
+                data.forEach(d=>{
+                    if( d.rank < cap ) this.drawDots(d,clrMap)
+                })
 
                 // re-center map
                 if( clist.length <= 1 ){ // re-center to most unique network
@@ -133,9 +136,7 @@ Vue.component('map-frame', {
                 // console.log('uni',uni)
 
             } else {
-                // alert('no wigle data')
-                this.stations[device].flagged = true
-                this.$forceUpdate()
+                consloe.log('no wigle data to draw')
             }
         }
     },
