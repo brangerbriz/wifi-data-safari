@@ -18,7 +18,7 @@
     <body>
 
         <div id="mapapp">
-            <map-frame ref="map"></map-frame>
+            <map-frame ref="map" :style="mapCSS"></map-frame>
             <div id="devices">
                 <div class="map-header">
                     <span>{{orderedDevices.length}} devices</span>
@@ -64,6 +64,15 @@
                     // calls init() via on('init-data')
                     // to load all previous data from CSV on server
                     socket.emit('get-init-data')
+                },
+                computed:{
+                    mapCSS:function(){
+                        return {
+                            'position':'fixed',
+                            'top':'0px;','left':'0px',
+                            'width':'100%','height':'100%',
+                        }
+                    }
                 },
                 methods:{
                     init:function(data){

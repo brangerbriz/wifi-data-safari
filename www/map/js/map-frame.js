@@ -32,15 +32,6 @@ Vue.component('map-frame', {
         // L.marker([34.175978,-118.849112]).addTo(this.map)
             // .bindPopup('California Museum of Art Thousand Oaks').openPopup()
     },
-    computed:{
-        css:function(){
-            return {
-                'position':'fixed',
-                'top':'0px;','left':'0px',
-                'width':'100%','height':'100%',
-            }
-        }
-    },
     methods:{
         updateNetList:function(nets){
             this.mapData.nets = nets
@@ -140,5 +131,5 @@ Vue.component('map-frame', {
             }
         }
     },
-    template:`<div id="map-inside-this-template" :style="css"></div>`
+    template:`<div id="map-inside-this-template"></div>`
 })
