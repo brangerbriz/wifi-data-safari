@@ -43,7 +43,7 @@ Vue.component('list-station-detail', {
                 <b v-else
                     class="filter"
                     v-on:click="emitFilt({type:'randomMac',data:DataObj.randomMac})"
-                >unique</b> their MAC address.
+                >unique</b> MAC address.
             </span>
 
             <span v-if="DataObj.vendor">
