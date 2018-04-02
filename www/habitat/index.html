@@ -14,12 +14,16 @@
         <meta name="msapplication-TileColor" content="#ffffff">
         <meta name="msapplication-TileImage" content="images/icon.png">
         <meta name="theme-color" content="#ffffff">
+
+        <script src="../js/component-methods.js"></script>
+        <script src="../js/vue.js"></script>
+        <!-- <script src="../js/vue.min.js"></script> -->
     </head>
     <body>
 
         <div id="app">
             <div id="summary">
-                {{Object.keys(networks).length}} flowers (ie. networks) and {{Object.keys(stations).length}} butterflies (ie. mobile devices) captured in the vicinity since {{startTimeStamp()}}
+                <b>{{Object.keys(networks).length}} flowers</b> (networks) and <b>{{Object.keys(stations).length}} butterflies</b>  (mobile devices) captured in the vicinity since {{startTimeStamp()}}
             </div>
 
             <!-- CLOUD / DNS INFO -->
@@ -113,9 +117,6 @@
             </div>
         </div>
 
-        <script src="../js/component-methods.js"></script>
-        <script src="../js/vue.js"></script>
-        <!-- <script src="../js/vue.min.js"></script> -->
         <script src="/socket.io/socket.io.js"></script>
         <script src="js/Tween.js"></script>
         <script src="js/three.min.js"></script>
