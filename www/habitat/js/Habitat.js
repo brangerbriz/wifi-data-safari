@@ -67,9 +67,11 @@ class Habitat {
         else return val
     }
 
-    getObj2DPos(obj){
+    getObj2DPos(obj,type){
         let p = new THREE.Vector3()
         p.setFromMatrixPosition( obj.matrixWorld )
+        let d = (type=='flower') ? 80 : 0
+        p.y += d
         let v = this.projector.projectVector(p, this.camera)
         let percX = (v.x + 1) / 2
         let percY = (-v.y + 1) / 2
@@ -431,9 +433,9 @@ class Habitat {
 
     setupScene(){
 
-        for (let i = 0; i < 10; i++) {
-            setTimeout(() => this.addCloud(Math.random()), this.ran(0, 5000))
-        }
+        // for (let i = 0; i < 10; i++) {
+        //     setTimeout(() => this.addCloud(Math.random()), this.ran(0, 5000))
+        // }
 
         // camera
         this.camera = new THREE.PerspectiveCamera(
