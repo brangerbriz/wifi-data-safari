@@ -31,7 +31,7 @@ Vue.component('map-frame', {
         this.mapData.tileLayer = L.tileLayer(
             this.mapData.tiles[this.mapData.t],{
             attribution:(this.DataCred=='true') ?
-                '&copy; OpenStreetMap contributors' : '' 
+                '&copy; OpenStreetMap contributors' : ''
         }).addTo(this.map)
 
         // for Thousand Oaks Museum marker
@@ -57,6 +57,11 @@ Vue.component('map-frame', {
             } else {
                 this.map.setView([gps.lan,gps.lon])
             }
+        },
+        clearDots:function(){
+            this.map.eachLayer((layer)=>{
+                if(layer.options.color) this.map.removeLayer(layer)
+            })
         },
         drawDots:function(d,clrMap){
             let opac = (d.rank>=100) ? 0.25 : 1-(d.rank/125)
@@ -84,9 +89,7 @@ Vue.component('map-frame', {
             // console.log(data)
 
             // clear previous markers
-            this.map.eachLayer((layer)=>{
-                if(layer.options.color) this.map.removeLayer(layer)
-            })
+            this.clearDots()
 
             if(data.length > 0){
 
