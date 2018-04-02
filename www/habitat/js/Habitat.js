@@ -36,6 +36,7 @@ class Habitat {
         this.camera = null
         this.scene = null
         this.renderer = null
+        this.projector = new THREE.Projector()
         // meshes && such
         this.gndMesh = null
         this.elevation = 25
@@ -64,6 +65,17 @@ class Habitat {
         let val = (max) ? Math.random()*(max-min)+min : Math.random()*min
         if(floor) return Math.floor(val)
         else return val
+    }
+
+    getObj2DPos(obj){
+        let p = new THREE.Vector3()
+        p.setFromMatrixPosition( obj.matrixWorld )
+        let v = this.projector.projectVector(p, this.camera)
+        let percX = (v.x + 1) / 2
+        let percY = (-v.y + 1) / 2
+        let x = percX*window.innerWidth
+        let y = percY*window.innerHeight
+        return {x:x,y:y}
     }
 
     createTestButterflies( num ){
@@ -296,13 +308,13 @@ class Habitat {
 
         const manager = new THREE.LoadingManager()
 		manager.onProgress = function (item, loaded, total) {
-			console.log(item, loaded, total)
+			// console.log(item, loaded, total)
 		}
 
 		var onProgress = function (xhr) {
 			if ( xhr.lengthComputable ) {
 				var percentComplete = xhr.loaded / xhr.total * 100;
-				console.log( Math.round(percentComplete, 2) + '% downloaded' )
+				// console.log( Math.round(percentComplete, 2) + '% downloaded' )
 			}
 		}
 
@@ -455,8 +467,8 @@ class Habitat {
         this.scene.add(light2)
         // SpotLight( color, intensity, distance, angle, penumbra, decay )
         // let spotLight = new THREE.SpotLight(0xffffff,20,2000,Math.PI/5,0.05,2)
-            // spotLight.position.set(0, 1500, 0)
-        // this.scene.add(spotLight)  TODO to spotLight or not to spotLight
+        //     spotLight.position.set(0, 1500, 0)
+        // this.scene.add(spotLight)  //TODO to spotLight or not to spotLight
 
         // ground
         this.createGnd()
@@ -478,9 +490,10 @@ class Habitat {
 		this.winResize()
     }
 
-    drawScene(){
+    drawScene(callback){
         requestAnimationFrame(()=>{
-            this.drawScene()
+            if(callback) this.drawScene(callback)
+            else this.drawScene()
         })
 
         if( this.debug ){
@@ -504,6 +517,10 @@ class Habitat {
         // update any flowers that need to spring up
         TWEEN.update()
 
+        // call optional callback
+        if(callback) callback()
+
         this.renderer.render( this.scene, this.camera )
     }
+
 }
