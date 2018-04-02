@@ -91,18 +91,18 @@
                     </svg>
                 </div>
                 <div>
-                    <b>{{pickedNet.mac}}</b>
+                    <b>{{pickedNet.ssid}}</b> ({{pickedNet.mac}})
                     <br>
                     We first saw this device {{pickedNet.seen}} ago,
                     <span v-if="pickedNet.vendor">
                         it was made by <b>{{pickedNet.vendor}}</b>
                     </span>
                     <span v-if="pickedNet.privacy=='OPN'">
-                        and it's Open(no security).
+                        and it's Open (no security).
                     </span>
                     <span v-else>
                         and it's using<b>
-                        {{printSecurity(pickedNet.privacy,pickedNet.cipher,pickedNet.auth)}}</b>security.
+                        {{printSecurity(pickedNet.privacy,pickedNet.cipher,pickedNet.auth)}}</b> security.
                     </span>
                     <span v-if="pickedNet.clients && pickedNet.clients.length>0">
                         It has {{pickedNet.clients.length}}
