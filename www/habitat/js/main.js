@@ -173,7 +173,7 @@ const app = new Vue({
                     // clera domains that aren't in habitat
                     this.domains = this.domains.filter(d => {
                         return habitat.clouds.map(c => c.name)
-                                .includes(d.domain) 
+                                .includes(d.domain)
                     })
                     this.pickedDNS = null
                 }
