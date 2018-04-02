@@ -60,6 +60,25 @@ const app = new Vue({
             }
             return`${m[st.getMonth()]} ${st.getDate()}, ${t.join(":")} ${apm}`
         },
+        pickedDevNetInfo:function(){
+            let dev = this.pickedDev
+            if( dev.network ){
+                let n = this.networks[dev.network].ssid
+                let arr = [...dev.probes]
+                let i = arr.indexOf(n)
+                if( i > -1 ) arr.splice(i,1)
+                return {
+                    network:n,
+                    probes: (arr.length>0) ? arr.join(', ') : null
+                }
+            } else if( dev.probes.length > 0 ){
+                return {
+                    probes:dev.probes.join(', ')
+                }
+            } else {
+                return false
+            }
+        },
         // -----------------------
         // updating dictionaries
         // -----------------------

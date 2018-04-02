@@ -58,11 +58,18 @@
                         This device is using a unique MAC address.
                     </span>
                     <span v-if="pickedDev.vendor">
-                        It was made by <b>{{pickedDev.vendor}}</b>
+                        It was made by <b>{{pickedDev.vendor}}</b>.
                     </span>
-                    <span v-if="pickedDev.probes.length>0">
-                        and has previously connected to the following networks:
-                        <b> {{ pickedDev.probes.join(', ') }}</b>
+                    <span v-if="pickedDevNetInfo()">
+                        <span v-if="pickedDevNetInfo().network && pickedDevNetInfo().probes">
+                            It is currently connected to <b>{{pickedDevNetInfo().network}}</b> and has previously connected to the following networks: <b>{{pickedDevNetInfo().probes}}</b>
+                        </span>
+                        <span v-if="pickedDevNetInfo().network && !pickedDevNetInfo().probes">
+                            It is currently connected to <b>{{pickedDevNetInfo().network}}</b>.
+                        </span>
+                        <span v-if="!pickedDevNetInfo().network && pickedDevNetInfo().probes">
+                            It has previously connected to the following networks: <b>{{pickedDevNetInfo().probes}}</b>
+                        </span>
                     </span>
                 </div>
                 <div>
