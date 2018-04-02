@@ -187,7 +187,7 @@ function launch(args) {
 	})
 
 	dnsParser.on('dns-request', domain => {
-		console.log(`[verbose] DNS request: ${domain}`)
+		console.log(`[verbose] DNS request: ${domain.domain}, blocked: ${domain.blocked}`)
 	})
 
 	console.log(`[info] HTTP server started on port ${args.port}`)
