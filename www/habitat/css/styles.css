@@ -1,0 +1,110 @@
+/* ~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._ */
+/* -~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=* */
+/* ~-._.-~=*=~-._.-~=*=~-._.                 ._.-~=*=~-._.-~=*=~-._.-~=*=~-._ */
+/* -~=*=~-._.-~=*=~-._.-~=*=~  GENERAL CSS  ~=*=~-._.-~=*=~-._.-~=*=~-._.-~=* */
+/* ~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._ */
+/* -~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=* */
+/* ~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._ */
+
+@font-face {
+    font-family: 'Source_Code';
+    src: url('../../css/fonts/sourcecodepro-regular-webfont.woff2') format('woff2'),
+         url('../../css/fonts/sourcecodepro-regular-webfont.woff') format('woff'),
+         url('../../css/fonts/sourcecodepro-regular-webfont.ttf') format('truetype'),
+         url('../../css/fonts/sourcecodepro-regular-webfont.svg#source_code_proregular')
+         format('svg');
+    font-weight: normal;
+    font-style: normal;
+
+}
+
+/*
+    BB Colors: #000000 #ffffff #E40477 #EBFCFF #C4C4C4
+*/
+
+html, body {
+    border:0; margin:0;
+    font-family: 'Source_Code',monospace,sans-serif;
+    font-weight: 400;
+    font-style: normal;
+    font-size: 18px;
+    letter-spacing: .01em;
+    color: #000;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    overflow: hidden;
+}
+
+.italic { font-style: italic; }
+
+/* ~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._ */
+/* -~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=* */
+/* ~-._.-~=*=~-._.-~=*=~-._.                 ._.-~=*=~-._.-~=*=~-._.-~=*=~-._ */
+/* -~=*=~-._.-~=*=~-._.-~=*=~-.  HUD CSS  .-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=* */
+/* ~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._ */
+/* -~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=* */
+/* ~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._.-~=*=~-._ */
+
+#app {
+    position: absolute;
+    z-index: 10;
+    right: 15px;
+    top: 15px;
+    font-size: 14px;
+}
+
+#app > div {
+    background-color: #fff;
+    border-left: 5px solid;
+    border-left-color: #000;
+    padding: 10px;
+    width: 670px;
+    margin-bottom: 15px;
+}
+
+    #summary {
+        background-color:rgba(0,0,0,0) !important;
+        border:none !important;
+        padding:0px !important;
+    }
+
+
+    #b-hud {
+        height: 310px;
+        display: flex;
+    }
+
+        .station-info {
+            padding-right: 10px;
+            text-overflow: ellipsis;
+            overflow: hidden;
+        }
+            .mac-addr { position: relative; top:-18px; }
+
+        .map-frame {
+            width: 420px;
+            height: 310px;
+        }
+        #no-map-data {
+            position: relative;
+            top: -310px;
+            z-index: 500;
+            text-align: center;
+            background-color: rgba(0,0,0,0.5);
+            color: #fff;
+            height: 160px;
+            padding-top: 150px;
+            font-weight: bold;
+            font-size: 22px;
+            text-transform: uppercase;
+        }
+
+    #f-hud {
+        height: 90px;
+        display: flex;
+    }
+
+        #f-hud > div:first-child {
+            padding-right: 10px;
+        }

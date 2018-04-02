@@ -36,6 +36,7 @@ class Habitat {
         this.camera = null
         this.scene = null
         this.renderer = null
+        this.projector = new THREE.Projector()
         // meshes && such
         this.gndMesh = null
         this.elevation = 25
@@ -64,6 +65,19 @@ class Habitat {
         let val = (max) ? Math.random()*(max-min)+min : Math.random()*min
         if(floor) return Math.floor(val)
         else return val
+    }
+
+    getObj2DPos(obj,type){
+        let p = new THREE.Vector3()
+        p.setFromMatrixPosition( obj.matrixWorld )
+        let d = (type=='flower') ? 80 : 0
+        p.y += d
+        let v = this.projector.projectVector(p, this.camera)
+        let percX = (v.x + 1) / 2
+        let percY = (-v.y + 1) / 2
+        let x = percX*window.innerWidth
+        let y = percY*window.innerHeight
+        return {x:x,y:y}
     }
 
     createTestButterflies( num ){
@@ -180,7 +194,7 @@ class Habitat {
 
 		b.mesh.geometry.scale(2, 2, 2)
         b.mesh.position.copy(pos)
-		b.mesh.geometry.rotateX(Math.random() * Math.PI)
+		b.mesh.geometry.rotateX(Math.random() * Math.PI/2)
 
     }
 
@@ -215,20 +229,11 @@ class Habitat {
 
         let pos = []
 		// x
-		// pos[0] = this.map(parseInt(dev.mac.split(':')[5],16),
-        //         0, 255, -this.worldSize[0] * 0.25, this.worldSize[0] * 0.25)
-		pos[0] = this.ran(-this.worldSize[0] * 0.3, this.worldSize[0] * 0.3)
-
+		pos[0] = this.ran(-this.worldSize[0] * 0.75, this.worldSize[0] * 0.75)
 		// y
 		pos[1] = -this.worldSize[1] / 2 - this.elevation - this.ran(0, 8)
-
 		// z
-		const nearZ = this.worldSize[2] * 5.5
-		const farZ  = -this.worldSize[2] * 0.25
-		const zOffset = -2000
-		pos[2] = this.map(dev.power, -30, -100,  nearZ + zOffset, farZ + zOffset)
-		// console.log(dev.power)
-		// console.log(`power: ${dev.power} z: ${pos[2]}`)
+        pos[2] = this.map(dev.power, -0, -100, this.worldSize[2]/2, -this.worldSize[2])
 
         let buffloader = new THREE.BufferGeometryLoader()
         buffloader.load('js/sunflower.json',(geometry)=>{
@@ -296,13 +301,13 @@ class Habitat {
 
         const manager = new THREE.LoadingManager()
 		manager.onProgress = function (item, loaded, total) {
-			console.log(item, loaded, total)
+			// console.log(item, loaded, total)
 		}
 
 		var onProgress = function (xhr) {
 			if ( xhr.lengthComputable ) {
 				var percentComplete = xhr.loaded / xhr.total * 100;
-				console.log( Math.round(percentComplete, 2) + '% downloaded' )
+				// console.log( Math.round(percentComplete, 2) + '% downloaded' )
 			}
 		}
 
@@ -321,9 +326,9 @@ class Habitat {
             cloud.scale.y = scale
             cloud.scale.z = scale
 
-			cloud.position.y = this.ran(0, 600)
-            cloud.position.z = this.ran(0, -700)
-            cloud.position.x = -1100
+			cloud.position.y = this.ran(0, this.worldSize[1]*0.5)
+            cloud.position.z = this.ran(0, -this.worldSize[2]*0.75)
+            cloud.position.x = -this.worldSize[0]*0.75
 
             const material = new THREE.MeshPhongMaterial({
                 color: '#ffffff',
@@ -344,7 +349,7 @@ class Habitat {
 
             const speed = this.ran(50, 100, true) * 1000
             new TWEEN.Tween(cloud.position)
-                .to({ x:1100, y:cloud.position.y, z:cloud.position.z }, speed)
+                .to({ x:this.worldSize[0], y:cloud.position.y, z:cloud.position.z }, speed)
 				.easing(TWEEN.Easing.Linear.None) // Use an easing function to make the animation smooth.
 				.onComplete(() => {
 					this.scene.remove(cloud)
@@ -356,13 +361,6 @@ class Habitat {
 					}
 				})
                 .start()
-				// tween scale over time to +/- 100% in each direction
-				new TWEEN.Tween(cloud.scale)
-	                .to({ x:cloud.scale.x * Math.random() * 2,
-						  y:cloud.scale.y * Math.random() * 2,
-						  z:cloud.scale.z * Math.random() * 2 }, speed)
-					.easing(TWEEN.Easing.Linear.None) // Use an easing function to make the animation smooth.
-	                .start()
 
             this.scene.add(cloud)
 
@@ -407,7 +405,7 @@ class Habitat {
         // mouse orbit camera controls
         this.cntrl=new THREE.OrbitControls(this.camera,this.renderer.domElement)
         // this.cntrl.maxPolarAngle = Math.PI * 0.5
-        this.camera.position.set(0,-this.worldSize[1]/2.5,this.worldSize[1]/1.5)
+        this.camera.position.set(0,-this.worldSize[1]/2.5,this.worldSize[2]/1.5)
         this.camera.rotation.set(0.18,0,0)
     }
 
@@ -419,9 +417,9 @@ class Habitat {
 
     setupScene(){
 
-        for (let i = 0; i < 10; i++) {
-            setTimeout(() => this.addCloud(Math.random()), this.ran(0, 5000))
-        }
+        // for (let i = 0; i < 10; i++) {
+        //     setTimeout(() => this.addCloud(Math.random()), this.ran(0, 5000))
+        // }
 
         // camera
         this.camera = new THREE.PerspectiveCamera(
@@ -441,8 +439,8 @@ class Habitat {
         this.scene.background = new THREE.Color( this.bgColor )
         if(this.fog) this.scene.fog = new THREE.Fog(
             this.bgColor,
-            this.worldSize[2] - this.worldSize[2]/8,
-            this.worldSize[2]*2
+            this.worldSize[2]*0.75,
+            this.worldSize[2]*1.5
         )
 
         // lights
@@ -455,8 +453,8 @@ class Habitat {
         this.scene.add(light2)
         // SpotLight( color, intensity, distance, angle, penumbra, decay )
         // let spotLight = new THREE.SpotLight(0xffffff,20,2000,Math.PI/5,0.05,2)
-            // spotLight.position.set(0, 1500, 0)
-        // this.scene.add(spotLight)  TODO to spotLight or not to spotLight
+        //     spotLight.position.set(0, 1500, 0)
+        // this.scene.add(spotLight)  //TODO to spotLight or not to spotLight
 
         // ground
         this.createGnd()
@@ -478,9 +476,10 @@ class Habitat {
 		this.winResize()
     }
 
-    drawScene(){
+    drawScene(callback){
         requestAnimationFrame(()=>{
-            this.drawScene()
+            if(callback) this.drawScene(callback)
+            else this.drawScene()
         })
 
         if( this.debug ){
@@ -504,6 +503,10 @@ class Habitat {
         // update any flowers that need to spring up
         TWEEN.update()
 
+        // call optional callback
+        if(callback) callback()
+
         this.renderer.render( this.scene, this.camera )
     }
+
 }

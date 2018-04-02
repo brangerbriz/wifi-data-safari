@@ -257,7 +257,7 @@ function spawnTcpdump(iface) {
 	// wifi network from this device, but if not you will probably be
 	// sad to see no traffic. Change iface to "any" string to listen for DNS
 	// requests on all interfaces
-	tcpdumpProc = spawn('tcpdump', ['udp', 'port', '53', '-i', 'any', '-l'])
+	tcpdumpProc = spawn('tcpdump', ['udp', 'port', '53', '-i', iface, '-l'])
 
 	tcpdumpProc.stdout.on('data', data => {
 		// parse tcpdump output. If a dns request is found, this will fire

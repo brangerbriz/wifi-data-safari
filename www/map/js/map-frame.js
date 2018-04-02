@@ -1,4 +1,8 @@
 Vue.component('map-frame', {
+    props:{
+        DataZoom:{type:String,default:'true'},
+        DataCred:{type:String,default:'true'}
+    },
     data:function(){return {
         map:null,
         mapData:{
@@ -16,30 +20,23 @@ Vue.component('map-frame', {
     }},
     mounted:function(){
         // create the map
-        this.map = L.map('map-inside-this-template')
-            .setView(this.mapData.defaultLoc, 13)
+        this.map = L.map('map-inside-this-template',{
+            zoomControl:(this.DataZoom=='true')
+        }).setView(this.mapData.defaultLoc, 13)
 
         // this will trigger setView() once ipinfo is returned
         // leaving this commented out for Thousand Oaks Museum
         // socket.emit('get-ipinfo')
 
         this.mapData.tileLayer = L.tileLayer(
-            this.mapData.tiles[this.mapData.t],
-            { attribution:'&copy; OpenStreetMap contributors' }
-        ).addTo(this.map)
+            this.mapData.tiles[this.mapData.t],{
+            attribution:(this.DataCred=='true') ?
+                '&copy; OpenStreetMap contributors' : ''
+        }).addTo(this.map)
 
         // for Thousand Oaks Museum marker
         // L.marker([34.175978,-118.849112]).addTo(this.map)
             // .bindPopup('California Museum of Art Thousand Oaks').openPopup()
-    },
-    computed:{
-        css:function(){
-            return {
-                'position':'fixed',
-                'top':'0px;','left':'0px',
-                'width':'100%','height':'100%',
-            }
-        }
     },
     methods:{
         updateNetList:function(nets){
@@ -60,6 +57,11 @@ Vue.component('map-frame', {
             } else {
                 this.map.setView([gps.lan,gps.lon])
             }
+        },
+        clearDots:function(){
+            this.map.eachLayer((layer)=>{
+                if(layer.options.color) this.map.removeLayer(layer)
+            })
         },
         drawDots:function(d,clrMap){
             let opac = (d.rank>=100) ? 0.25 : 1-(d.rank/125)
@@ -87,9 +89,7 @@ Vue.component('map-frame', {
             // console.log(data)
 
             // clear previous markers
-            this.map.eachLayer((layer)=>{
-                if(layer.options.color) this.map.removeLayer(layer)
-            })
+            this.clearDots()
 
             if(data.length > 0){
 
@@ -140,5 +140,5 @@ Vue.component('map-frame', {
             }
         }
     },
-    template:`<div id="map-inside-this-template" :style="css"></div>`
+    template:`<div id="map-inside-this-template"></div>`
 })
