@@ -170,6 +170,11 @@ const app = new Vue({
                     targ.cloud.draw()
                 } else {
                     targ.cloud.clear()
+                    // clera domains that aren't in habitat
+                    this.domains = this.domains.filter(d => {
+                        return habitat.clouds.map(c => c.name)
+                                .includes(d.domain) 
+                    })
                     this.pickedDNS = null
                 }
             } else {
@@ -208,8 +213,7 @@ const app = new Vue({
         },
         pickCloud:function(){
             if(this.domains.length > 0){
-                if(this.pickedDNS) this.domains.shift()
-                this.pickedDNS = this.domains[0]
+                this.pickedDNS = this.domains.shift()
             } else {
                 this.pickedDNS = null
             }
