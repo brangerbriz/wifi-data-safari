@@ -11,6 +11,7 @@ Vue.component('map-frame', {
             defaultLoc:[41.887349,-87.677997], // Branger_Briz, Chicago
             t:0,
             tiles:[
+				// `http://${location.host}/map/tiles/denver_39.7982_-105.0318_35km/{z}/{x}/{y}.png`,
                 'http://a.tile.stamen.com/toner/{z}/{x}/{y}.png',
                 'http://a.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png'
             ],
@@ -23,6 +24,7 @@ Vue.component('map-frame', {
         this.map = L.map('map-inside-this-template',{
             zoomControl:(this.DataZoom=='true')
         }).setView(this.mapData.defaultLoc, 13)
+		  .setMaxZoom(17)
 
         // this will trigger setView() once ipinfo is returned
         // leaving this commented out for Thousand Oaks Museum
