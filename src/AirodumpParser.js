@@ -205,9 +205,20 @@ class AirodumpParser extends EventEmitter {
 		// parse the XX:XX:XX:XX:XX:XX format to an int
 		const num = parseInt(macStr.replace(/:/g, ''), 16)
 		// convert it to a binary string
-		let binary = new Number(num).toString(2)
-		// left pad it
-		binary = padLeft(binary, 48)
+		let binary = num.toString(2)
+
+		// we've noticed this throws an error sometimes. Can't figure
+		// out why because the error happens so irregularly:
+		// https://github.com/brangerbriz/wifi-data-safari/issues/16
+		// but my lazy fix is to just return false if error is thrown
+		// this is kind of a lie, but also, I think it's fair to say
+		// the MAC isn't random if it isn't a valid MAC.
+		try {
+			// left pad it
+			binary = padLeft(binary, 48)
+		} catch (err) {
+			return false
+		}
 		// if the seventh most significant bit is set the MAC
 		// address is locally addressed, meaning it isn't unique
 		// and there is a 99% chance the device is using MAC
