@@ -157,8 +157,9 @@ class AirodumpParser extends EventEmitter {
 				callback(devices)
 			} else {
 				macLookup.lookup(dev.mac, (err, vendor) => {
-					if (err) throw err
-					else dev.vendor = vendor
+					if (err) {
+						console.trace(err)
+					} else dev.vendor = vendor
 					callback(devices)
 				})
 			}
