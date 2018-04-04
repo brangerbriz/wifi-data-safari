@@ -11,8 +11,8 @@ Vue.component('map-frame', {
             defaultLoc:[41.887349,-87.677997], // Branger_Briz, Chicago
             t:0,
             tiles:[
-                'http://a.tile.stamen.com/toner/{z}/{x}/{y}.png',
-                'http://a.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png'
+                'http://a.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png',
+                'http://a.tile.stamen.com/toner/{z}/{x}/{y}.png'
             ],
             tileLayer:null,
             nets:[] // networks to be visualized (based on probes)
