@@ -3,3 +3,5 @@ data/airodump-*.csv
 data/wigle_data
 package-lock.json
 www/js/test-events.js
+www/map/tiles/*
+!www/map/tiles/.gitkeep
