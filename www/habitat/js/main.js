@@ -1,9 +1,4 @@
 const socket = io(`http://${window.location.host}`)
-socket.on('networks',(ns)=>{ns.forEach((n)=>app.addDevice(n))})
-socket.on('stations',(ss)=>{ss.forEach((s)=>app.addDevice(s))})
-socket.on('dns-request',(domain)=>{app.addCloud(domain)})
-socket.on('wigle-data',w=>app.drawWigleData(w))
-
 const habitat = new Habitat({
     debug: false,
     // test:500,
@@ -21,22 +16,39 @@ const targ = {
 const app = new Vue({
     el: '#app',
     data: {
+        ready: false,
+        //
         networks:{},
         stations:{},
         domains:[],
         //
         startTime:new Date(),
-        switchTime:5000, // how often to swtich HUD info
         prevDevs:[], // previously chosen butterflies
         prevNets:[], // previously chosen flowers
+        curDNSIdx:-1,
         pickedDev:null,
         pickedNet:null,
         pickedDNS:null,
+        stationsTally:0,
+        limits:{
+            domains:Infinity,
+            stations:500,
+            networks:70
+        }
     },
     created: function(){
-        habitat.setupScene()
-        habitat.drawScene(()=>{ this.updateTargets() })
-        this.tick()
+        habitat.setupScene(()=>{
+            socket.on('networks',(ns)=>{ns.forEach((n)=>app.addDevice(n))})
+            socket.on('stations',(ss)=>{ss.forEach((s)=>app.addDevice(s))})
+            socket.on('dns-request',(domain)=>{app.addCloud(domain)})
+            socket.on('wigle-data',w=>app.drawWigleData(w))
+
+            habitat.drawScene(()=>{ this.updateTargets() })
+
+            this.tickDNS(2000)
+            this.tickDev(10000)
+            this.tickNet(7000)
+        })
     },
     methods:{
         // -----------------------
@@ -62,7 +74,7 @@ const app = new Vue({
         },
         pickedDevNetInfo:function(){
             let dev = this.pickedDev
-            if( dev.network ){
+            if( dev.network && this.networks[dev.network] ){
                 let n = this.networks[dev.network].ssid
                 let arr = [...dev.probes]
                 let i = arr.indexOf(n)
@@ -102,10 +114,10 @@ const app = new Vue({
                 this.$set(this.networks[netMac],'clients',clients)
 
             } else { // for debugging
-                if( typeof devMac == 'undefined')
-                    console.log(`tried to update ${netMac}, but not in list`)
-                else
-                    console.log(`tried to add ${devMac} to ${netMac}`)
+                // if( typeof devMac == 'undefined')
+                //     console.log(`tried to update ${netMac}, but not in list`)
+                // else
+                //     console.log(`tried to add ${devMac} to ${netMac}`)
             }
         },
         addDevice:function(dev){
@@ -114,35 +126,59 @@ const app = new Vue({
                 this.$set( this[`${dev.type}s`], dev.mac,
                         Object.assign(this[`${dev.type}s`][dev.mac],dev) )
             } else {
-                // add new device to stations||networks dictionary
-                this.$set( this[`${dev.type}s`], dev.mac,
-                        Object.assign({},dev) )
+                let count = Object.keys(this[`${dev.type}s`]).length
+                // if stations reached limit, then rmv oldest
+                if( count >= this.limits.stations && dev.type=="station"){
+                    // remove oldest station in dictionary...
+                    let mac = Object.keys(this.stations)[0]
+                    delete this.stations[mac]
+                    // ...&& then remove it from the habitat scene
+                    habitat.rmvButterfly( mac )
+                }
+
                 // create new butterfly for this device
-                if( dev.type=='station') habitat.addButterfly( dev )
+                if( dev.type=='station') {
+                    this.$set(this.stations, dev.mac, Object.assign({},dev))
+                    habitat.addButterfly( dev )
+                    this.stationsTally++
+                }
                 // or create new flower for this device
                 else if( dev.type=='network'){
-                    // TODO maybe limit flowers to "active networks"
-                    // ie. only networks w/devices associated?
-                    if(dev.ssid!=="") habitat.addFlower( dev )
+                    if( count <= this.limits.networks ){
+                        this.$set(this.networks, dev.mac, Object.assign({},dev))
+                        if(dev.ssid!=="") habitat.addFlower( dev )
+                    }
                 }
             }
 
-            // let habitat know about associated stations
-            for(let mac in this.stations){
-                if(typeof this.stations[mac].network=="string")
+            let d = this[`${dev.type}s`][dev.mac]
+            if( d ){
+                // update connected devices list
+                if( dev.type=="network")
+                    this.updateConnectedDevices(d.mac)
+                else if( dev.type=="station" && d.network)
+                    this.updateConnectedDevices(d.network,d.mac)
+
+                // let habitat know about associated stations
+                for(let mac in this.stations){
+                    if(typeof this.stations[mac].network=="string")
                     habitat.updateAssoButterfly(mac,this.stations[mac].network)
+                }
             }
 
-            // update connected devices list
-            let n = this[`${dev.type}s`][dev.mac]
-            if( dev.type=="network")
-                this.updateConnectedDevices(n.mac)
-            else if( dev.type=="station" && n.network)
-                this.updateConnectedDevices(n.network,n.mac)
         },
         addCloud:function(domain){
             habitat.addCloud(domain)
-            this.domains.push( domain )
+            this.domains.push(domain)
+        },
+        clearDomains:function(){
+            // clear domains that aren't in habitat
+            this.domains = this.domains.filter(d => {
+                return habitat.clouds.map(c => c.name).includes(d.domain)
+            })
+        },
+        clearStations:function(){
+
         },
         // -----------------------
         // drawing maps
@@ -160,9 +196,11 @@ const app = new Vue({
                 // draw data only if there's any left to draw
                 if( filteredData.length > 0 )
                     this.$refs.map.drawData(w.device,filteredData)
-                else this.stations[w.device].toomany = true
+                else if(this.stations[w.device])
+                    this.stations[w.device].toomany = true
             } else {
-                this.stations[w.device].nodata = true
+                if(this.stations[w.device])
+                    this.stations[w.device].nodata = true
             }
 
             // .... no data message....
@@ -189,11 +227,7 @@ const app = new Vue({
                     targ.cloud.draw()
                 } else {
                     targ.cloud.clear()
-                    // clera domains that aren't in habitat
-                    this.domains = this.domains.filter(d => {
-                        return habitat.clouds.map(c => c.name)
-                                .includes(d.domain)
-                    })
+                    this.clearDomains()
                     this.pickedDNS = null
                 }
             } else {
@@ -232,8 +266,11 @@ const app = new Vue({
         },
         pickCloud:function(){
             if(this.domains.length > 0){
-                this.pickedDNS = this.domains.shift()
+                this.curDNSIdx++
+                if( this.curDNSIdx >= this.domains.length ) this.curDNSIdx=0
+                this.pickedDNS = this.domains[this.curDNSIdx]
             } else {
+                this.curDNSIdx = -1
                 this.pickedDNS = null
             }
         },
@@ -284,13 +321,13 @@ const app = new Vue({
             arr.push(val)
             return arr
         },
-        tick:function(){
-            setTimeout(()=>{
-                this.tick()
-            },this.switchTime)
-
+        tickDNS:function(time){
+            setTimeout(()=>{ this.tickDNS(time) },time)
             // choose cloud
             this.pickCloud()
+        },
+        tickDev:function(time){
+            setTimeout(()=>{ this.tickDev(time) },time)
 
             // choose butterfly
             if( Object.keys(this.stations).length > 0 ){
@@ -307,6 +344,9 @@ const app = new Vue({
             } else {
                 this.pickedDev = null
             }
+        },
+        tickNet:function(time){
+            setTimeout(()=>{ this.tickNet(time) },time)
 
             // choose flower
             if( Object.keys(this.networks).length > 0){

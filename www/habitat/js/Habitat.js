@@ -44,6 +44,9 @@ class Habitat {
         this.butterflies = []
         this.flowers = []
         this.clouds = []
+        this.flowerGeo = null
+        this.flowerGroups = null
+        this.cloudGeos = []
         // options
         this.bgColor = (c && c.bgColor) ? c.bgColor : 0xffffff
         this.fog = (c && c.fog) ? c.fog : false
@@ -79,21 +82,22 @@ class Habitat {
         let y = percY*window.innerHeight
         return {x:x,y:y}
     }
+    randomMac(){
+        var hexDigits = "0123456789ABCDEF"
+        var macAddress = ""
+        for (var i = 0; i < 6; i++) {
+            macAddress+=hexDigits.charAt(this.ran(0,15,true))
+            macAddress+=hexDigits.charAt(this.ran(0,15,true))
+            if (i != 5) macAddress += ":"
+        }
+        return macAddress
+    }
 
     createTestButterflies( num ){
-        function genMAC(){
-            var hexDigits = "0123456789ABCDEF"
-            var macAddress = ""
-            for (var i = 0; i < 6; i++) {
-                macAddress+=hexDigits.charAt(self.ran(0,15,true))
-                macAddress+=hexDigits.charAt(self.ran(0,15,true))
-                if (i != 5) macAddress += ":"
-            }
-            return macAddress
-        }
+
         for ( var i = 0; i < num; i ++ ) {
             let dev = {
-                "mac": genMAC(),
+                "mac": this.randomMac(),
                 "firstSeen": "2017-12-15 16:01:08",
                 "lastSeen": "2017-12-15 16:01:08",
                 "power": -89,
@@ -104,6 +108,14 @@ class Habitat {
                 "vendor":"Apple"
             }
             this.addButterfly(dev)
+        }
+    }
+
+    rmvButterfly(mac){
+        let i = this.butterflies.indexOf(this.butterflies.find(b=>b.mac==mac))
+        if(i>=0){
+            this.scene.remove( this.butterflies[i].mesh )
+            this.butterflies.splice(i,1)
         }
     }
 
@@ -174,9 +186,9 @@ class Habitat {
 				this.flutterPhase = Math.random() * 0.003 + 0.003
 			}
 			this.geometry.verticesNeedUpdate = true
-			this.position.y += Math.sin(Date.now() * this.flutterPhase) * 0.5
+			this.position.y += Math.sin(Date.now()*this.flutterPhase) * 0.5
 			// this.position.y += noise.perlin2(this.noiseDelta, 0) * 0.25
-			this.position.x += Math.sin(Date.now() * this.flutterPhase) * 0.1
+			this.position.x += Math.sin(Date.now()*this.flutterPhase) * 0.1
 
 		}
         // add mesh to scene && butterfly object to array
@@ -185,7 +197,6 @@ class Habitat {
     }
 
     placeButterflyOnFlower(b,f){
-        // TODO
         let pos = Object.assign({},f.position)
 
 		pos.x += this.ran(-25, 25)
@@ -213,12 +224,33 @@ class Habitat {
         }
     }
 
-    addFlower(dev){
+    createFlowerGeo(callback){
         function onError(e){ console.log('there was an error') }
         function onProgress(xhr){
             console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' )
         }
 
+        let buffloader = new THREE.BufferGeometryLoader()
+        buffloader.load('js/sunflower.json',(geometry)=>{
+            this.flowerGeo = geometry
+
+            let fileloader = new THREE.FileLoader()
+            fileloader.load('js/sunflower-groups.json',(jsonString)=>{
+                this.flowerGroups = JSON.parse(jsonString)
+                callback()
+            }/*,onProgress,onError*/) // for debug
+
+            // morph...
+            // for(let i=0; i<flower.geometry.index.count; i++){
+            //     let v = [i,this.ran(0,100),this.ran(0,100),this.ran(0,100)]
+            //     flower.geometry.attributes.position.setXYZ( ...v )
+            //     flower.geometry.attributes.position.needsUpdate = true
+            // }
+
+        }/*,onProgress,onError*/) // for debug
+    }
+
+    addFlower(dev){
         let clr = [
             parseInt(dev.mac.split(':')[0],16),
             parseInt(dev.mac.split(':')[1],16),
@@ -235,137 +267,116 @@ class Habitat {
 		// z
         pos[2] = this.map(dev.power, -0, -100, this.worldSize[2]/2, -this.worldSize[2])
 
-        let buffloader = new THREE.BufferGeometryLoader()
-        buffloader.load('js/sunflower.json',(geometry)=>{
-            let materials = [
-                new THREE.MeshPhongMaterial({color:'#7c5106'}),
-                new THREE.MeshPhongMaterial({color:'rgb('+clr+')'}),
-                new THREE.MeshPhongMaterial({color:'#b1f49f'})
-                // index 3 is nothing, ie. make things disapear
-            ]
-            let material = new THREE.MeshFaceMaterial(materials)
-            let flower = new THREE.Mesh( geometry, material )
-                flower.geometry.scale(50,50,50)
-                flower.position.set(...pos)
-                flower.rotation.y = this.ran(-1,1)
-                flower.name = dev.mac
+        let materials = [
+            new THREE.MeshPhongMaterial({color:'#7c5106'}),
+            new THREE.MeshPhongMaterial({color:'rgb('+clr+')'}),
+            new THREE.MeshPhongMaterial({color:'#b1f49f'})
+            // index 3 is nothing, ie. make things disapear
+        ]
 
-            // assign groups with  corresponding  materialIndex
-            let group = 0
-            let fileloader = new THREE.FileLoader()
-            fileloader.load('js/sunflower-groups.json',(jsonString)=>{
-                let data = JSON.parse(jsonString)
-                for (let part in data) {
-                    data[part].start.forEach((s,i)=>{
-                        let idx // index for material in materials array above
-                        switch(part){
-                            case 'seeds': idx=0;break;
-                            case 'pedals': idx=1;break;
-                            case 'stem': idx=2;break;
-                            case 'leaf1': idx=sec;break;
-                            case 'leaf2': idx=sec;break;
-                            case 'leaf3': idx=sec;break;
-                        }
-                        flower.geometry.groups[group] = {
-                            start:data[part].start[i],
-                            count:data[part].count[i],
-                            materialIndex:idx
-                        }
-                        group++
-                    })
+        let material = new THREE.MeshFaceMaterial(materials)
+        let geometry = this.flowerGeo.clone()
+        let flower = new THREE.Mesh( geometry, material )
+        let group = 0
+        let data = this.flowerGroups
+        // assign groups with  corresponding  materialIndex
+        for (let part in data) {
+            data[part].start.forEach((s,i)=>{
+                let idx // index for material in materials array above
+                switch(part){
+                    case 'seeds': idx=0;break;
+                    case 'pedals': idx=1;break;
+                    case 'stem': idx=2;break;
+                    case 'leaf1': idx=sec;break;
+                    case 'leaf2': idx=sec;break;
+                    case 'leaf3': idx=sec;break;
                 }
+                flower.geometry.groups[group] = {
+                    start:data[part].start[i],
+                    count:data[part].count[i],
+                    materialIndex:idx
+                }
+                group++
+            })
+        }
+        flower.geometry.scale(50,50,50)
+        flower.position.set(...pos)
+        flower.rotation.y = this.ran(-1,1)
+        flower.name = dev.mac
 
-                // if(this.flowers.length < 20){
-                //NOTE: limiting flower amount for testing
-                    flower.scale.y = 0
-                    this.scene.add( flower )
-                    this.flowers.push( flower )
-                    new TWEEN.Tween(flower.scale)
-                        .to({ x:1, y:1, z:1 }, 500)
-                        .easing(TWEEN.Easing.Sinusoidal.Out)
-                        .start()
-                // }
+        flower.scale.y = 0
+        this.scene.add( flower )
+        this.flowers.push( flower )
+        new TWEEN.Tween(flower.scale)
+            .to({ x:1, y:1, z:1 }, 500)
+            .easing(TWEEN.Easing.Sinusoidal.Out)
+            .start()
+    }
+
+    createCloudGeos(callback){
+        function onError(e){ console.log('there was an error') }
+        function onProgress(xhr){
+            console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' )
+        }
+
+        let paths = [
+            'js/cloud1.json',
+            'js/cloud2.json',
+            'js/cloud3.json',
+            'js/cloud4.json'
+        ]
+
+        let buffloader = new THREE.BufferGeometryLoader()
+        paths.forEach(path=>{
+            buffloader.load(path,(geometry)=>{
+                this.cloudGeos.push(geometry)
+                if(this.cloudGeos.length==paths.length) callback()
             }/*,onProgress,onError*/) // for debug
+        })
 
-            // morph...
-            // for(let i=0; i<flower.geometry.index.count; i++){
-            //     let v = [i,this.ran(0,100),this.ran(0,100),this.ran(0,100)]
-            //     flower.geometry.attributes.position.setXYZ( ...v )
-            //     flower.geometry.attributes.position.needsUpdate = true
-            // }
-
-        }/*,onProgress,onError*/) // for debug
     }
 
     addCloud(dnsRecord) {
+        let material = new THREE.MeshPhongMaterial({
+            color: '#ffffff',
+            emissive: '#555555',
+            shininess: 0,
+            flatShading: true,
+            opacity: 0.5,
+            transparent: true
+        })
+        let ran = this.ran(0,this.cloudGeos.length,true)
+        let geometry = this.cloudGeos[ran].clone()
+        let cloud = new THREE.Mesh( geometry, material )
 
-        const manager = new THREE.LoadingManager()
-		manager.onProgress = function (item, loaded, total) {
-			// console.log(item, loaded, total)
-		}
+        cloud.name = dnsRecord.domain
+        cloud.blocked = dnsRecord.blocked
 
-		var onProgress = function (xhr) {
-			if ( xhr.lengthComputable ) {
-				var percentComplete = xhr.loaded / xhr.total * 100;
-				// console.log( Math.round(percentComplete, 2) + '% downloaded' )
-			}
-		}
+        let scale = this.ran(25, 50, true)
+        cloud.scale.x = scale
+        cloud.scale.y = scale
+        cloud.scale.z = scale
 
-		var onError = function (xhr) {
-            console.log(xhr)
-		}
+        cloud.position.y = this.ran(0, this.worldSize[1]*0.5)
+        cloud.position.z = this.ran(0, -this.worldSize[2]*0.75)
+        cloud.position.x = -this.worldSize[0]*0.75
 
-		var loader = new THREE.OBJLoader(manager)
-		loader.load(`js/Clouds_Separated/Cloud${this.ran(1, 4, true)}.obj`, cloud => {
+        this.clouds.push(cloud)
 
-			cloud.name = dnsRecord.domain
-			cloud.blocked = dnsRecord.blocked
+        new TWEEN.Tween(cloud.position)
+            .to({ x:this.worldSize[0], y:cloud.position.y, z:cloud.position.z }, this.ran(50, 100, true) * 1000)
+            .easing(TWEEN.Easing.Linear.None)
+            .onComplete(() => {
+                this.scene.remove(cloud)
+                // remove the cloud from the clouds array
+                for(let i = this.clouds.length - 1; i >= 0 ; i--){
+                    if(this.clouds[i].uuid == cloud.uuid){
+                        this.clouds.splice(i, 1)
+                    }
+                }
+            }).start()
 
-            const scale = this.ran(25, 50, true)
-            cloud.scale.x = scale
-            cloud.scale.y = scale
-            cloud.scale.z = scale
-
-			cloud.position.y = this.ran(0, this.worldSize[1]*0.5)
-            cloud.position.z = this.ran(0, -this.worldSize[2]*0.75)
-            cloud.position.x = -this.worldSize[0]*0.75
-
-            const material = new THREE.MeshPhongMaterial({
-                color: '#ffffff',
-                emissive: '#555555',
-                shininess: 0,
-                flatShading: true,
-				opacity: 0.5,
-				transparent: true
-            })
-
-            cloud.traverse(child => {
-				if (child instanceof THREE.Mesh) {
-					child.material = material
-				}
-			})
-
-            this.clouds.push(cloud)
-
-            const speed = this.ran(50, 100, true) * 1000
-            new TWEEN.Tween(cloud.position)
-                .to({ x:this.worldSize[0], y:cloud.position.y, z:cloud.position.z }, speed)
-				.easing(TWEEN.Easing.Linear.None) // Use an easing function to make the animation smooth.
-				.onComplete(() => {
-					this.scene.remove(cloud)
-					// remove the cloud from the clouds array
-					for(let i = this.clouds.length - 1; i >= 0 ; i--){
-						if(this.clouds[i].uuid == cloud.uuid){
-							this.clouds.splice(i, 1)
-						}
-					}
-				})
-                .start()
-
-            this.scene.add(cloud)
-
-		}, onProgress, onError )
-
+        this.scene.add(cloud)
     }
 
     createGnd(){
@@ -415,11 +426,7 @@ class Habitat {
         this.renderer.setSize( innerWidth, innerHeight )
     }
 
-    setupScene(){
-
-        // for (let i = 0; i < 10; i++) {
-        //     setTimeout(() => this.addCloud(Math.random()), this.ran(0, 5000))
-        // }
+    setupScene(callback){
 
         // camera
         this.camera = new THREE.PerspectiveCamera(
@@ -472,6 +479,13 @@ class Habitat {
         window.addEventListener( 'resize', ()=>{
             this.winResize()
         }, false )
+
+        // load object data from disk
+        this.createFlowerGeo(()=>{
+            this.createCloudGeos(()=>{
+                callback()
+            })
+        })
 
 		this.winResize()
     }
