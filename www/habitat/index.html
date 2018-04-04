@@ -23,7 +23,7 @@
 
         <div id="app">
             <div id="summary">
-                <b>{{Object.keys(networks).length}} flowers</b> (networks) and <b>{{Object.keys(stations).length}} butterflies</b>  (mobile devices) captured in the vicinity since {{startTimeStamp()}}
+                <b>{{Object.keys(networks).length}} flowers</b> (networks) and <b>{{stationsTally}} butterflies</b>  (mobile devices) captured in the vicinity since {{startTimeStamp()}}
             </div>
 
             <!-- CLOUD / DNS INFO -->
@@ -130,7 +130,6 @@
         <script src="js/stats.min.js"></script>
         <script src="js/OrbitControls.js"></script>
         <script src="js/Projector.js"></script>
-        <script src="js/OBJLoader.js"></script>
         <script src="js/boid.js"></script>
         <script src="js/butterfly.js"></script>
         <script src="js/Habitat.js"></script>
