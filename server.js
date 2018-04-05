@@ -111,9 +111,12 @@ function launch(args) {
 	// using websockets
 	if (fs.existsSync('data/wigle_data')) {
 		// load wigle data
-		fs.readdirSync('data/wigle_data').forEach((file,i)=>{
+		fs.readdirSync('data/wigle_data')
+		.filter(f => f.includes('.json'))
+		.forEach((file,i)=>{
 			fs.readFile(`data/wigle_data/${file}`,(err,data)=>{
 				if(err) throw err;
+
 				JSON.parse(data).forEach((obj)=>{
 					// update wigle data
 					wigle.data.push({
