@@ -1,6 +1,7 @@
 node_modules/
 data/airodump-*.csv
-data/wigle_data
+data/wigle_data/*
+!data/wigle_data/.gitkeep
 package-lock.json
 www/js/test-events.js
 www/map/tiles/*
