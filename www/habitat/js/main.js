@@ -33,7 +33,7 @@ const app = new Vue({
         limits:{
             domains:Infinity,
             stations:500,
-            networks:70
+            networks:50
         }
     },
     created: function(){
