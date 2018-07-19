@@ -116,7 +116,7 @@ function launch(args) {
 		.forEach((file,i)=>{
 			fs.readFile(`data/wigle_data/${file}`,(err,data)=>{
 				if(err) throw err;
-
+				console.log(`[verbose] loaded wigle data from data/wigle_data/${file}`)
 				JSON.parse(data).forEach((obj)=>{
 					// update wigle data
 					wigle.data.push({
