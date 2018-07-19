@@ -51,8 +51,8 @@
             socket.on('wigle-data',w=>mapapp.drawWigleData(w))
             socket.on('stations',(ss)=>{ ss.forEach((s)=>mapapp.add(s)) })
 
-            // the Collective, CO
-            const initGPS = [39.999696,-105.090894]
+            // Hotel Pennsylvania, NYC
+            const initGPS = [40.7498, -73.9906]
 
             const mapapp = new Vue({
                 el: '#mapapp',

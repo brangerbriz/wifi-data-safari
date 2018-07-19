@@ -8,10 +8,11 @@ Vue.component('map-frame', {
         mapData:{
             // defaultLoc:[34.175978,-118.849112], // Thousand Oaks Museum
             // defaultLoc:[39.999696,-105.090894], // the Collective, CO
-            defaultLoc:[41.887349,-87.677997], // Branger_Briz, Chicago
+            // defaultLoc:[41.887349,-87.677997], // Branger_Briz, Chicago
+            defaultLoc:[40.7498, -73.9906], // Hotel Pennsylvania, HOPE 2018, NYC
             t:0,
             tiles:[
-				// `http://${location.host}/map/tiles/denver_39.7982_-105.0318_35km/{z}/{x}/{y}.png`,
+				`http://${location.host}/map/tiles/nyc_40.7265_-73.9946_30km_zoom_0-17/{z}/{x}/{y}.png`,
                 'http://a.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png',
                 'http://a.tile.stamen.com/toner/{z}/{x}/{y}.png'
             ],
