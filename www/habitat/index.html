@@ -139,6 +139,24 @@
         <script src="../map/js/map-frame.js"></script>
         <script src="js/main.js"></script>
         <!-- <script src="../js/test-events.js"></script> -->
+        <script>
+            // FOR ELECTRON APP -- ART INSTALLATION
+            if(typeof require == "function"){
+                const { ipcRenderer } = require('electron')
+                document.addEventListener('keypress',(e)=>{
+                    console.log(e)
+                    if(e.ctrlKey && e.key=="d"){
+                        ipcRenderer.send('key-cmd','open-dev')
+                    } else if(e.ctrlKey && e.key=="e"){
+                        ipcRenderer.send('key-cmd','exit-fullscreen')
+                    } else if(e.ctrlKey && e.key=="f"){
+                        ipcRenderer.send('key-cmd','enter-fullscreen')
+                    } else if(e.ctrlKey && e.key=="r"){
+                        location.reload()
+                    }
+                })
+            }
+        </script>
 
     </body>
 </html>
