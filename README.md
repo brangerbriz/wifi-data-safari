@@ -8,6 +8,9 @@ The WiFi Data Safari Workshop is a continuation of the [Probe Kit project](http:
 
 For participants of the workshop, this document serves as a reference for the material that we cover during the workshop. For those of you who wandered here from the far reaches of the Internet, welcome. We hope that you will learn something while you are here, even if you couldn't make it to the workshop.
 
+![WiFi Data Safari 3D Habitat](images/habitat.png)
+> Screenshot of the 3D WiFi habitat view used during the workshop
+
 ![Workshop software screenshot](images/workshop-screenshot.png)
 
 > Screenshot of the data safari software used in the workshop
